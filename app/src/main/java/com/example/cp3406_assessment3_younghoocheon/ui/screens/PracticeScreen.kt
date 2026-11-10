@@ -1,6 +1,7 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,36 +24,44 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
-import com.example.cp3406_assessment3_younghoocheon.data.SampleData
+import com.example.cp3406_assessment3_younghoocheon.data.Rating
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.IconCircleButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicTag
 import com.example.cp3406_assessment3_younghoocheon.ui.components.screenBackground
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.LocalReduceMotion
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Lime
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Mint
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sand
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.PracticeViewModel
 
 @Composable
 fun PracticeScreen(topic: String, onClose: () -> Unit) {
-    val cards = SampleData.cardsFor(topic)
-    var index by rememberSaveable { mutableIntStateOf(0) }
-    var showAnswer by rememberSaveable { mutableStateOf(false) }
-    val finished = index >= cards.size
+    val container = appContainer()
+    val viewModel: PracticeViewModel = viewModel(
+        factory = viewModelFactory { initializer { PracticeViewModel(container.repository, topic) } },
+    )
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val cards = state.queue
+    val index = state.index
+    val finished = !state.loading && index >= cards.size
     val progress = index.toFloat() / cards.size.coerceAtLeast(1)
 
     Column(
@@ -66,7 +75,11 @@ fun PracticeScreen(topic: String, onClose: () -> Unit) {
             IconCircleButton(Icons.Filled.Close, "Close practice", onClose)
             Spacer(Modifier.weight(1f))
             Text(
-                text = if (finished) "Done" else "Card ${index + 1} of ${cards.size}",
+                text = when {
+                    state.loading -> ""
+                    finished -> "Done"
+                    else -> "Card ${index + 1} of ${cards.size}"
+                },
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -89,32 +102,26 @@ fun PracticeScreen(topic: String, onClose: () -> Unit) {
         }
         AppProgressBar(progress = progress)
 
-        if (finished) {
+        if (state.loading) {
+            Spacer(Modifier.weight(1f))
+        } else if (finished) {
             FinishedPanel(onClose = onClose, modifier = Modifier.weight(1f))
         } else {
             val card = cards[index]
             TopicTag(text = card.topic, color = topicColor(card.topic))
             FlipCard(
                 card = card,
-                showAnswer = showAnswer,
-                onFlip = { showAnswer = !showAnswer },
+                showAnswer = state.showAnswer,
+                onFlip = viewModel::flip,
                 modifier = Modifier.weight(1f).fillMaxWidth(),
             )
-            if (showAnswer) {
-                RatingRow(
-                    onRate = {
-                        index += 1
-                        showAnswer = false
-                    },
-                )
+            if (state.showAnswer) {
+                RatingRow(onRate = viewModel::rate)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     PillButton(
                         text = "Back",
-                        onClick = {
-                            if (index > 0) index -= 1
-                            showAnswer = false
-                        },
+                        onClick = viewModel::goBack,
                         modifier = Modifier.weight(1f),
                         container = MaterialTheme.colorScheme.surfaceVariant,
                         content = MaterialTheme.colorScheme.onSurface,
@@ -122,12 +129,12 @@ fun PracticeScreen(topic: String, onClose: () -> Unit) {
                     )
                     PillButton(
                         text = "Show answer",
-                        onClick = { showAnswer = true },
+                        onClick = viewModel::revealAnswer,
                         modifier = Modifier.weight(2f),
                     )
                 }
             }
-            MutedText("You rate yourself. No timer and no penalty for skipping.")
+            MutedText("Your rating is saved on this device. No timer, no penalty for skipping.")
         }
     }
 }
@@ -139,9 +146,10 @@ private fun FlipCard(
     onFlip: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val reduceMotion = LocalReduceMotion.current
     val rotation by animateFloatAsState(
         targetValue = if (showAnswer) 180f else 0f,
-        animationSpec = tween(durationMillis = 450),
+        animationSpec = if (reduceMotion) snap() else tween(durationMillis = 450),
         label = "flip",
     )
     val backVisible = rotation > 90f
@@ -186,16 +194,22 @@ private fun FlipCard(
     }
 }
 
+private fun ratingColor(rating: Rating): Color = when (rating) {
+    Rating.Again -> Peach
+    Rating.Hard -> Sand
+    Rating.Good -> Mint
+    Rating.Easy -> Lime
+}
+
 @Composable
-private fun RatingRow(onRate: () -> Unit) {
-    val ratings = listOf("Again" to Peach, "Hard" to Sand, "Good" to Mint, "Easy" to Lime)
+private fun RatingRow(onRate: (Rating) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        ratings.forEach { (label, color) ->
+        Rating.entries.forEach { rating ->
             PillButton(
-                text = label,
-                onClick = onRate,
+                text = rating.label,
+                onClick = { onRate(rating) },
                 modifier = Modifier.weight(1f),
-                container = color,
+                container = ratingColor(rating),
                 showArrow = false,
             )
         }
@@ -225,7 +239,7 @@ private fun FinishedPanel(onClose: () -> Unit, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground,
         )
-        MutedText("No streak pressure. Come back whenever you like.")
+        MutedText("Saved. Check Home and Stats to see your progress.")
         PillButton(text = "Back to Home", onClick = onClose)
     }
 }

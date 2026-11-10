@@ -9,7 +9,7 @@ data class LinkItem(
     val thumbnailUrl: String? = null,
 )
 
-data class Flashcard(val front: String, val back: String, val topic: String)
+data class Flashcard(val id: Int, val front: String, val back: String, val topic: String)
 
 object SampleData {
     val topics = listOf("All", "Privacy", "Access", "Memory")
@@ -34,31 +34,37 @@ object SampleData {
 
     val cards = listOf(
         Flashcard(
+            id = 1,
             front = "What is data minimisation?",
             back = "Collecting and keeping only the data a feature really needs.",
             topic = "Privacy",
         ),
         Flashcard(
+            id = 2,
             front = "Why should an app ask for a permission only when it is needed?",
             back = "It limits unnecessary access and lets users understand why it is requested.",
             topic = "Privacy",
         ),
         Flashcard(
+            id = 3,
             front = "Name one way to make an app more accessible.",
             back = "Add content descriptions, support larger text and keep good colour contrast.",
             topic = "Access",
         ),
         Flashcard(
+            id = 4,
             front = "Why offer a high contrast option?",
             back = "It helps users with low vision read text and spot controls more easily.",
             topic = "Access",
         ),
         Flashcard(
+            id = 5,
             front = "What is spaced repetition?",
             back = "Reviewing material at increasing intervals so it is remembered for longer.",
             topic = "Memory",
         ),
         Flashcard(
+            id = 6,
             front = "What is active recall?",
             back = "Trying to retrieve an answer from memory before looking at it.",
             topic = "Memory",

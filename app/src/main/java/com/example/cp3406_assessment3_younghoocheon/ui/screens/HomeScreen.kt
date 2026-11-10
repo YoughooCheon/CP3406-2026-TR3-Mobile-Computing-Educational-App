@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,28 +26,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.appContainer
+import com.example.cp3406_assessment3_younghoocheon.data.DAILY_GOAL
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.InfoPill
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
-import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Thumbnail
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.StatsViewModel
 
 @Composable
 fun HomeScreen(
     onStartPractice: (String) -> Unit,
     onOpenLearn: () -> Unit,
 ) {
+    val container = appContainer()
+    val viewModel: StatsViewModel = viewModel(
+        factory = viewModelFactory { initializer { StatsViewModel(container.repository) } },
+    )
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
+
     var topic by rememberSaveable { mutableStateOf(SampleData.topics.first()) }
-    val dueCount = SampleData.cardsFor(topic).size
+    val topicCards = SampleData.cardsFor(topic)
+    val dueCount = topicCards.count { it.id !in stats.reviewedTodayIds }
+    val allDone = dueCount == 0
     val featured = SampleData.links.first { it.kind == "Lecture" }
     val ink = MaterialTheme.colorScheme.onPrimary
     val lime = MaterialTheme.colorScheme.primary
+    val goalProgress = stats.reviewedToday.toFloat() / DAILY_GOAL
 
     Column(
         modifier = Modifier
@@ -68,7 +84,14 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
             }
-            InfoPill(icon = Icons.Filled.Lock, text = "On device")
+            if (stats.streakDays > 0) {
+                InfoPill(
+                    icon = Icons.Filled.Star,
+                    text = if (stats.streakDays == 1) "1 day" else "${stats.streakDays} days",
+                )
+            } else {
+                InfoPill(icon = Icons.Filled.Lock, text = "On device")
+            }
         }
 
         Row(
@@ -82,24 +105,32 @@ fun HomeScreen(
 
         AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
             Text(
-                text = "DUE TODAY",
+                text = if (allDone) "TODAY" else "DUE TODAY",
                 style = MaterialTheme.typography.labelMedium,
                 color = ink,
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "$dueCount cards",
+                text = when {
+                    allDone -> "All done"
+                    dueCount == 1 -> "1 card"
+                    else -> "$dueCount cards"
+                },
                 style = MaterialTheme.typography.displaySmall,
                 color = ink,
             )
             Text(
-                text = "A short session. No timer, no penalty for skipping.",
+                text = if (allDone) {
+                    "You reviewed every card in this topic today. Nice work."
+                } else {
+                    "A short session. No timer, no penalty for skipping."
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = ink,
             )
             Spacer(Modifier.height(20.dp))
             PillButton(
-                text = "Start review",
+                text = if (allDone) "Practice again" else "Start review",
                 onClick = { onStartPractice(topic) },
                 container = ink,
                 content = lime,
@@ -142,14 +173,12 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
-                MutedText("3 of 5 cards")
+                MutedText("${stats.reviewedToday.coerceAtMost(DAILY_GOAL)} of $DAILY_GOAL cards")
             }
             Spacer(Modifier.height(12.dp))
-            AppProgressBar(progress = 0.6f)
+            AppProgressBar(progress = goalProgress)
             Spacer(Modifier.height(12.dp))
             MutedText("Rest days are fine. Nothing is lost.")
         }
-
-        NoticeBox("Prototype: values on this screen are sample data.")
     }
 }

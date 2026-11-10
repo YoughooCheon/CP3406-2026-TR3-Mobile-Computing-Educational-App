@@ -1,5 +1,8 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Ink
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.LocalReduceMotion
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Night
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Plum
@@ -264,7 +269,12 @@ fun AppProgressBar(
     color: Color = MaterialTheme.colorScheme.primary,
     track: Color = MaterialTheme.colorScheme.surfaceVariant,
 ) {
-    val clamped = progress.coerceIn(0f, 1f)
+    val reduceMotion = LocalReduceMotion.current
+    val animated by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = if (reduceMotion) snap() else tween(durationMillis = 600),
+        label = "progress",
+    )
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -272,13 +282,13 @@ fun AppProgressBar(
             .clip(CircleShape)
             .background(track)
             .semantics(mergeDescendants = true) {
-                progressBarRangeInfo = ProgressBarRangeInfo(clamped, 0f..1f)
+                progressBarRangeInfo = ProgressBarRangeInfo(animated, 0f..1f)
             },
     ) {
         Box(
             Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(clamped)
+                .fillMaxWidth(animated)
                 .clip(CircleShape)
                 .background(color),
         )

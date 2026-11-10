@@ -23,26 +23,31 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.SettingsViewModel
 
 @Composable
 fun SettingsScreen(onOpenPrivacy: () -> Unit) {
-    var reminder by rememberSaveable { mutableStateOf(false) }
-    var breaks by rememberSaveable { mutableStateOf(true) }
-    var highContrast by rememberSaveable { mutableStateOf(false) }
-    var reduceMotion by rememberSaveable { mutableStateOf(false) }
-    var textSize by rememberSaveable { mutableStateOf("M") }
+    val container = appContainer()
+    val viewModel: SettingsViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { SettingsViewModel(container.settingsStore, container.repository) }
+        },
+    )
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -53,44 +58,49 @@ fun SettingsScreen(onOpenPrivacy: () -> Unit) {
     ) {
         ScreenTitle("Settings")
 
-        SettingsGroup("Reminders") {
-            SwitchRow(
-                label = "Daily reminder",
-                hint = "Off by default. Asks for notification permission only when you turn it on.",
-                checked = reminder,
-                onCheckedChange = { reminder = it },
-            )
-            SwitchRow(
-                label = "Break reminders",
-                hint = "A gentle suggestion to rest during long sessions.",
-                checked = breaks,
-                onCheckedChange = { breaks = it },
-            )
-        }
-
         SettingsGroup("Display and access") {
             Text(
                 text = "Text size",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            MutedText("Changes the whole app right away")
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("S", "M", "L").forEach { size ->
-                    TagChip(text = size, selected = textSize == size, onClick = { textSize = size })
+                    TagChip(
+                        text = size,
+                        selected = settings.textSize == size,
+                        onClick = { viewModel.setTextSize(size) },
+                    )
                 }
             }
             SwitchRow(
                 label = "High contrast",
-                hint = null,
-                checked = highContrast,
-                onCheckedChange = { highContrast = it },
+                hint = "Brighter secondary text and clearer outlines",
+                checked = settings.highContrast,
+                onCheckedChange = viewModel::setHighContrast,
             )
             SwitchRow(
                 label = "Reduce motion",
-                hint = null,
-                checked = reduceMotion,
-                onCheckedChange = { reduceMotion = it },
+                hint = "Turns off the card flip and bar animations",
+                checked = settings.reduceMotion,
+                onCheckedChange = viewModel::setReduceMotion,
+            )
+        }
+
+        SettingsGroup("Reminders") {
+            SwitchRow(
+                label = "Daily reminder",
+                hint = "Saved now. Notifications arrive in a later update.",
+                checked = settings.dailyReminder,
+                onCheckedChange = viewModel::setDailyReminder,
+            )
+            SwitchRow(
+                label = "Break reminders",
+                hint = "Saved now. Used in a later update.",
+                checked = settings.breakReminders,
+                onCheckedChange = viewModel::setBreakReminders,
             )
         }
 
@@ -123,7 +133,7 @@ fun SettingsScreen(onOpenPrivacy: () -> Unit) {
             }
         }
 
-        NoticeBox("Prototype: settings are not saved yet.")
+        NoticeBox("Your settings are saved on this device and stay after you close the app.")
     }
 }
 

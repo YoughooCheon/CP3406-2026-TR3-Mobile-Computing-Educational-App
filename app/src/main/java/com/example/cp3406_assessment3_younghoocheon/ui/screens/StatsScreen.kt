@@ -21,26 +21,37 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.appContainer
+import com.example.cp3406_assessment3_younghoocheon.data.DayCount
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
-
-private val sampleWeek = listOf(
-    "M" to 0.4f, "T" to 0.55f, "W" to 0.5f, "T" to 0.7f, "F" to 0.65f, "S" to 0.85f, "S" to 0.8f,
-)
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.StatsViewModel
 
 @Composable
 fun StatsScreen() {
+    val container = appContainer()
+    val viewModel: StatsViewModel = viewModel(
+        factory = viewModelFactory { initializer { StatsViewModel(container.repository) } },
+    )
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
     val ink = MaterialTheme.colorScheme.onPrimary
     val lime = MaterialTheme.colorScheme.primary
+    val maxCount = (stats.week.maxOfOrNull { it.count } ?: 0).coerceAtLeast(1)
 
     Column(
         modifier = Modifier
@@ -50,12 +61,19 @@ fun StatsScreen() {
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         ScreenTitle("Progress")
-        NoticeBox("Prototype: all numbers below are sample data.")
+
+        if (stats.totalReviewed == 0) {
+            NoticeBox("No reviews yet. Finish a practice session and your numbers will appear here.")
+        }
 
         AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
             Text("STREAK", style = MaterialTheme.typography.labelMedium, color = ink)
             Spacer(Modifier.height(8.dp))
-            Text("5 days", style = MaterialTheme.typography.displaySmall, color = ink)
+            Text(
+                text = if (stats.streakDays == 1) "1 day" else "${stats.streakDays} days",
+                style = MaterialTheme.typography.displaySmall,
+                color = ink,
+            )
             Text(
                 text = "Missed a day? It is only a record. No guilt prompts.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -63,20 +81,28 @@ fun StatsScreen() {
             )
             Spacer(Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                sampleWeek.forEachIndexed { i, (day, _) ->
-                    DayDot(day = day, done = i >= 2, modifier = Modifier.weight(1f))
+                stats.week.forEach { day ->
+                    DayDot(day = day.label, done = day.count > 0, modifier = Modifier.weight(1f))
                 }
             }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard("Retention", "82%", Modifier.weight(1f))
-            StatCard("Reviewed", "126", Modifier.weight(1f))
+            StatCard(
+                label = "Good or Easy",
+                value = stats.retentionPercent?.let { "$it%" } ?: "-",
+                modifier = Modifier.weight(1f),
+            )
+            StatCard(
+                label = "Reviewed",
+                value = stats.totalReviewed.toString(),
+                modifier = Modifier.weight(1f),
+            )
         }
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Accuracy this week",
+                text = "Cards reviewed this week",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -86,33 +112,18 @@ fun StatsScreen() {
                     .fillMaxWidth()
                     .height(150.dp)
                     .semantics(mergeDescendants = true) {
-                        contentDescription = "Accuracy by day this week, sample data"
+                        contentDescription = "Cards reviewed per day over the last seven days"
                     },
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                sampleWeek.forEachIndexed { i, (day, value) ->
-                    Column(
+                stats.week.forEachIndexed { i, day ->
+                    WeekBar(
+                        day = day,
+                        fraction = day.count.toFloat() / maxCount,
+                        highlight = i == stats.week.lastIndex,
                         modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height((100 * value).dp)
-                                .background(
-                                    color = if (i == sampleWeek.lastIndex) lime
-                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                                    shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
-                                ),
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = day,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    )
                 }
             }
         }
@@ -123,13 +134,42 @@ fun StatsScreen() {
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            Spacer(Modifier.height(4.dp))
+            MutedText("Share of reviews you rated Good or Easy")
             Spacer(Modifier.height(16.dp))
-            MasteryRow("Privacy and data", 0.78f)
-            Spacer(Modifier.height(14.dp))
-            MasteryRow("Accessibility", 0.52f)
-            Spacer(Modifier.height(14.dp))
-            MasteryRow("Memory techniques", 0.64f)
+            stats.mastery.entries.forEachIndexed { i, entry ->
+                if (i > 0) Spacer(Modifier.height(14.dp))
+                MasteryRow(label = entry.key, value = entry.value)
+            }
         }
+    }
+}
+
+@Composable
+private fun WeekBar(day: DayCount, fraction: Float, highlight: Boolean, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = day.count.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(4.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height((90 * fraction).dp.coerceAtLeast(4.dp))
+                .background(
+                    color = if (highlight) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+                ),
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = day.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -172,7 +212,7 @@ private fun StatCard(label: String, value: String, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun MasteryRow(label: String, value: Float) {
+private fun MasteryRow(label: String, value: Float?) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(Modifier.fillMaxWidth()) {
             Text(
@@ -181,10 +221,10 @@ private fun MasteryRow(label: String, value: Float) {
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
             )
-            MutedText("${(value * 100).toInt()}%")
+            MutedText(if (value == null) "No data yet" else "${(value * 100).toInt()}%")
         }
         AppProgressBar(
-            progress = value,
+            progress = value ?: 0f,
             track = MaterialTheme.colorScheme.outline,
         )
     }
