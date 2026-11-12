@@ -10,13 +10,33 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class StudyRepository(
-    private val dao: ReviewDao,
+    private val reviewDao: ReviewDao,
+    private val cardDao: CardDao,
     private val settingsStore: SettingsStore,
 ) {
-    fun observeStats(): Flow<StudyStats> = dao.observeAll().map { buildStats(it) }
+    fun observeCards(): Flow<List<Flashcard>> = cardDao.observeAll().map { custom ->
+        SampleData.cards + custom.map { it.toFlashcard() }
+    }
+
+    suspend fun addCard(front: String, back: String, topic: String) {
+        cardDao.insert(
+            CardEntity(
+                front = front,
+                back = back,
+                topic = topic,
+                createdAt = System.currentTimeMillis(),
+            ),
+        )
+    }
+
+    suspend fun deleteCard(card: Flashcard) {
+        if (card.custom) cardDao.deleteById((card.id - CUSTOM_ID_OFFSET).toLong())
+    }
+
+    fun observeStats(): Flow<StudyStats> = reviewDao.observeAll().map { buildStats(it) }
 
     suspend fun recordReview(card: Flashcard, rating: Rating) {
-        dao.insert(
+        reviewDao.insert(
             ReviewEntity(
                 cardId = card.id,
                 topic = card.topic,
@@ -28,12 +48,14 @@ class StudyRepository(
     }
 
     suspend fun deleteAll() {
-        dao.deleteAll()
+        reviewDao.deleteAll()
+        cardDao.deleteAll()
         settingsStore.clear()
     }
 
     suspend fun exportJson(): String {
-        val reviews = dao.getAll()
+        val reviews = reviewDao.getAll()
+        val customCards = cardDao.getAll()
         val settings = settingsStore.settings.first()
         val reviewArray = JSONArray()
         reviews.forEach { review ->
@@ -45,6 +67,16 @@ class StudyRepository(
                     .put("reviewedAt", review.reviewedAt),
             )
         }
+        val cardArray = JSONArray()
+        customCards.forEach { card ->
+            cardArray.put(
+                JSONObject()
+                    .put("front", card.front)
+                    .put("back", card.back)
+                    .put("topic", card.topic)
+                    .put("createdAt", card.createdAt),
+            )
+        }
         val settingsObject = JSONObject()
             .put("dailyReminder", settings.dailyReminder)
             .put("breakReminders", settings.breakReminders)
@@ -53,6 +85,7 @@ class StudyRepository(
             .put("textSize", settings.textSize)
         return JSONObject()
             .put("exportedAt", System.currentTimeMillis())
+            .put("customCards", cardArray)
             .put("reviews", reviewArray)
             .put("settings", settingsObject)
             .toString(2)
@@ -99,3 +132,11 @@ class StudyRepository(
         )
     }
 }
+
+private fun CardEntity.toFlashcard(): Flashcard = Flashcard(
+    id = CUSTOM_ID_OFFSET + id.toInt(),
+    front = front,
+    back = back,
+    topic = topic,
+    custom = true,
+)

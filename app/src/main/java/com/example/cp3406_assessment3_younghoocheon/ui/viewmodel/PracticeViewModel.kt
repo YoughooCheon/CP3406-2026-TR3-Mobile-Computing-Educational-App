@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
 import com.example.cp3406_assessment3_younghoocheon.data.Rating
-import com.example.cp3406_assessment3_younghoocheon.data.SampleData
+import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.data.StudyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +31,7 @@ class PracticeViewModel(
     init {
         viewModelScope.launch {
             val doneToday = repository.observeStats().first().reviewedTodayIds
-            val all = SampleData.cardsFor(topic)
+            val all = repository.observeCards().first().forTopic(topic)
             val due = all.filter { it.id !in doneToday }
             _state.value = PracticeState(queue = due.ifEmpty { all }, loading = false)
         }

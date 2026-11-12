@@ -7,11 +7,13 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.cp3406_assessment3_younghoocheon.data.AppDatabase
 import com.example.cp3406_assessment3_younghoocheon.data.SettingsStore
 import com.example.cp3406_assessment3_younghoocheon.data.StudyRepository
+import com.example.cp3406_assessment3_younghoocheon.data.VideoRepository
 
 class AppContainer(context: Context) {
     private val database = AppDatabase.create(context)
     val settingsStore = SettingsStore(context)
-    val repository = StudyRepository(database.reviewDao(), settingsStore)
+    val repository = StudyRepository(database.reviewDao(), database.cardDao(), settingsStore)
+    val videoRepository = VideoRepository()
 }
 
 class MemoryDeskApp : Application() {

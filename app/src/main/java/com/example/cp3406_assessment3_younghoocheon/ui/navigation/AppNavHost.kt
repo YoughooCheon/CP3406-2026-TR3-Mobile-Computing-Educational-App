@@ -42,6 +42,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cp3406_assessment3_younghoocheon.ui.components.screenBackground
+import com.example.cp3406_assessment3_younghoocheon.ui.screens.AddCardScreen
+import com.example.cp3406_assessment3_younghoocheon.ui.screens.CardsScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.HomeScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.LearnScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.LibraryScreen
@@ -59,6 +61,8 @@ object Routes {
     const val STATS = "stats"
     const val SETTINGS = "settings"
     const val PRIVACY = "privacy"
+    const val CARDS = "cards"
+    const val ADD_CARD = "add_card"
     const val TOPIC_ARG = "topic"
     const val PRACTICE = "practice/{topic}"
 
@@ -120,6 +124,8 @@ fun AppNavHost() {
                 HomeScreen(
                     onStartPractice = { topic -> navController.navigate(Routes.practice(topic)) },
                     onOpenLearn = { navController.navigateToTab(Routes.LEARN) },
+                    onOpenCards = { navController.navigate(Routes.CARDS) },
+                    onAddCard = { navController.navigate(Routes.ADD_CARD) },
                 )
             }
             composable(Routes.LEARN) { LearnScreen() }
@@ -136,6 +142,15 @@ fun AppNavHost() {
                     topic = entry.arguments?.getString(Routes.TOPIC_ARG) ?: "All",
                     onClose = { navController.popBackStack() },
                 )
+            }
+            composable(Routes.CARDS) {
+                CardsScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddCard = { navController.navigate(Routes.ADD_CARD) },
+                )
+            }
+            composable(Routes.ADD_CARD) {
+                AddCardScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.PRIVACY) {
                 PrivacyScreen(onBack = { navController.popBackStack() })

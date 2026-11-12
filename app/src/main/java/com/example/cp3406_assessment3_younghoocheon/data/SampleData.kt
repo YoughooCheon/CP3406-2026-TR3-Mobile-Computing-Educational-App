@@ -9,7 +9,19 @@ data class LinkItem(
     val thumbnailUrl: String? = null,
 )
 
-data class Flashcard(val id: Int, val front: String, val back: String, val topic: String)
+const val CUSTOM_ID_OFFSET = 1000
+const val MAX_CARD_TEXT = 200
+
+data class Flashcard(
+    val id: Int,
+    val front: String,
+    val back: String,
+    val topic: String,
+    val custom: Boolean = false,
+)
+
+fun List<Flashcard>.forTopic(topic: String): List<Flashcard> =
+    if (topic == "All") this else filter { it.topic == topic }
 
 object SampleData {
     val topics = listOf("All", "Privacy", "Access", "Memory")
@@ -70,7 +82,4 @@ object SampleData {
             topic = "Memory",
         ),
     )
-
-    fun cardsFor(topic: String): List<Flashcard> =
-        if (topic == "All") cards else cards.filter { it.topic == topic }
 }

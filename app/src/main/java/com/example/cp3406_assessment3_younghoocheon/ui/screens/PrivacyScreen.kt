@@ -60,7 +60,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete all data?") },
-            text = { Text("This removes your review history and settings from this device. It cannot be undone.") },
+            text = { Text("This removes your own cards, review history, and settings from this device. It cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -93,7 +93,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Which card you reviewed, your rating, the time, and your settings",
+                text = "Cards you create, which card you reviewed, your rating, the time, and your settings",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -125,7 +125,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             MutedText("The app does not send notifications yet. It works fully without them.")
         }
 
-        NoticeBox("YouTube and Google Scholar links open outside the app, and lecture thumbnails load from YouTube. Their privacy policies apply.")
+        NoticeBox("YouTube and Google Scholar links open outside the app. The Learn screen asks YouTube for the lecture title and thumbnail, so YouTube can see your IP address. Their privacy policies apply.")
 
         PillButton(
             text = "Export my data (JSON)",

@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.DAILY_GOAL
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
+import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
@@ -48,6 +49,8 @@ import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.StatsViewModel
 fun HomeScreen(
     onStartPractice: (String) -> Unit,
     onOpenLearn: () -> Unit,
+    onOpenCards: () -> Unit,
+    onAddCard: () -> Unit,
 ) {
     val container = appContainer()
     val viewModel: StatsViewModel = viewModel(
@@ -56,7 +59,8 @@ fun HomeScreen(
     val stats by viewModel.stats.collectAsStateWithLifecycle()
 
     var topic by rememberSaveable { mutableStateOf(SampleData.topics.first()) }
-    val topicCards = SampleData.cardsFor(topic)
+    val cards by viewModel.cards.collectAsStateWithLifecycle()
+    val topicCards = cards.forTopic(topic)
     val dueCount = topicCards.count { it.id !in stats.reviewedTodayIds }
     val allDone = dueCount == 0
     val featured = SampleData.links.first { it.kind == "Lecture" }
@@ -162,6 +166,33 @@ fun HomeScreen(
                     )
                     MutedText(featured.subtitle)
                 }
+            }
+        }
+
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "My cards",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(4.dp))
+            MutedText("${cards.size} cards, ${cards.count { it.custom }} made by you")
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                PillButton(
+                    text = "Add card",
+                    onClick = onAddCard,
+                    modifier = Modifier.weight(1f),
+                    showArrow = false,
+                )
+                PillButton(
+                    text = "View all",
+                    onClick = onOpenCards,
+                    modifier = Modifier.weight(1f),
+                    container = MaterialTheme.colorScheme.surfaceVariant,
+                    content = MaterialTheme.colorScheme.onSurface,
+                    showArrow = false,
+                )
             }
         }
 
