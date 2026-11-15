@@ -23,6 +23,9 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -33,14 +36,17 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
+import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
+import com.example.cp3406_assessment3_younghoocheon.ui.components.NicknameDialog
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
-import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
+import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.SettingsViewModel
 
+/** Preferences for learning, display and reminders. Every change is saved immediately with DataStore. */
 @Composable
-fun SettingsScreen(onOpenPrivacy: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
     val container = appContainer()
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
@@ -48,6 +54,18 @@ fun SettingsScreen(onOpenPrivacy: () -> Unit) {
         },
     )
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    var showNickname by rememberSaveable { mutableStateOf(false) }
+
+    if (showNickname) {
+        NicknameDialog(
+            current = settings.nickname,
+            onDismiss = { showNickname = false },
+            onSave = {
+                viewModel.setNickname(it)
+                showNickname = false
+            },
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -56,7 +74,55 @@ fun SettingsScreen(onOpenPrivacy: () -> Unit) {
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        ScreenTitle("Settings")
+        BackHeader(title = "Settings", onBack = onBack)
+
+        SettingsGroup("Learning") {
+            Text(
+                text = "Cards per session",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(5 to "5", 10 to "10", 0 to "All").forEach { (value, label) ->
+                    TagChip(
+                        text = label,
+                        selected = settings.cardsPerSession == value,
+                        onClick = { viewModel.setCardsPerSession(value) },
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = "Daily goal",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(3, 5, 10).forEach { value ->
+                    TagChip(
+                        text = value.toString(),
+                        selected = settings.dailyGoal == value,
+                        onClick = { viewModel.setDailyGoal(value) },
+                    )
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                text = "Nickname: ${settings.nickname}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            PillButton(
+                text = "Change nickname",
+                onClick = { showNickname = true },
+                container = MaterialTheme.colorScheme.surfaceVariant,
+                content = MaterialTheme.colorScheme.onSurface,
+                showArrow = false,
+            )
+        }
 
         SettingsGroup("Display and access") {
             Text(

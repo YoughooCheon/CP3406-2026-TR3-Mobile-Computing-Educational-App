@@ -38,6 +38,18 @@ class SettingsViewModel(
         viewModelScope.launch { store.setTextSize(value) }
     }
 
+    fun setDailyGoal(value: Int) {
+        viewModelScope.launch { store.setDailyGoal(value) }
+    }
+
+    fun setCardsPerSession(value: Int) {
+        viewModelScope.launch { store.setCardsPerSession(value) }
+    }
+
+    fun setNickname(value: String) {
+        viewModelScope.launch { store.setNickname(value) }
+    }
+
     fun deleteAll() {
         viewModelScope.launch { repository.deleteAll() }
     }

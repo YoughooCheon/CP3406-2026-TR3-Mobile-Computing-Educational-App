@@ -93,7 +93,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Cards you create, which card you reviewed, your rating, the time, and your settings",
+                text = "Your nickname, cards you create, which card you reviewed, your rating, the time, and your settings",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )

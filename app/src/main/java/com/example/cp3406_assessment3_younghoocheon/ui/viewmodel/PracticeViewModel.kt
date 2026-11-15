@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
 import com.example.cp3406_assessment3_younghoocheon.data.Rating
-import com.example.cp3406_assessment3_younghoocheon.data.forTopic
+import com.example.cp3406_assessment3_younghoocheon.data.SettingsStore
 import com.example.cp3406_assessment3_younghoocheon.data.StudyRepository
+import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +21,10 @@ data class PracticeState(
     val loading: Boolean = true,
 )
 
+/** Runs one flashcard session. The queue is fixed when the session starts so it does not change while rating. */
 class PracticeViewModel(
     private val repository: StudyRepository,
+    settingsStore: SettingsStore,
     topic: String,
 ) : ViewModel() {
 
@@ -33,7 +36,10 @@ class PracticeViewModel(
             val doneToday = repository.observeStats().first().reviewedTodayIds
             val all = repository.observeCards().first().forTopic(topic)
             val due = all.filter { it.id !in doneToday }
-            _state.value = PracticeState(queue = due.ifEmpty { all }, loading = false)
+            val chosen = due.ifEmpty { all }
+            val limit = settingsStore.settings.first().cardsPerSession
+            val queue = if (limit > 0) chosen.take(limit) else chosen
+            _state.value = PracticeState(queue = queue, loading = false)
         }
     }
 

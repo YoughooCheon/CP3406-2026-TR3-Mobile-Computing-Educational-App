@@ -56,7 +56,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.PracticeViewMod
 fun PracticeScreen(topic: String, onClose: () -> Unit) {
     val container = appContainer()
     val viewModel: PracticeViewModel = viewModel(
-        factory = viewModelFactory { initializer { PracticeViewModel(container.repository, topic) } },
+        factory = viewModelFactory { initializer { PracticeViewModel(container.repository, container.settingsStore, topic) } },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cards = state.queue

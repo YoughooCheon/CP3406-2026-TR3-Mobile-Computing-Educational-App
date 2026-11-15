@@ -35,12 +35,12 @@ import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.LinkItem
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
+import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PlayBadge
-import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Thumbnail
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicTag
@@ -51,8 +51,9 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnState
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnViewModel
 
+/** Lectures screen: loads the featured lecture details from the YouTube oEmbed API with loading and error states. */
 @Composable
-fun LearnScreen() {
+fun LearnScreen(onBack: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val container = appContainer()
     val featured = SampleData.links.first { it.kind == "Lecture" }
@@ -70,12 +71,8 @@ fun LearnScreen() {
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ScreenTitle("Learn")
-                MutedText("Free lectures from Stanford Online")
-            }
-        }
+        item { BackHeader(title = "Lectures", onBack = onBack) }
+        item { MutedText("Free lectures from Stanford Online") }
         item {
             NoticeBox("This screen asks YouTube for the lecture title and thumbnail, so YouTube can see your IP address. Links open in YouTube.")
         }

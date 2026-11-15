@@ -1,6 +1,7 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,12 +12,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,8 +31,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,24 +42,40 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.appContainer
+import com.example.cp3406_assessment3_younghoocheon.data.Achievement
+import com.example.cp3406_assessment3_younghoocheon.data.Achievements
 import com.example.cp3406_assessment3_younghoocheon.data.DayCount
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
-import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.StatsViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.Ink
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
 
+private fun achievementIcon(id: String): ImageVector = when (id) {
+    "first" -> Icons.Filled.Star
+    "ten" -> Icons.Filled.Check
+    "streak3" -> Icons.Filled.DateRange
+    "explorer" -> Icons.Filled.Search
+    else -> Icons.Filled.Create
+}
+
+/** Progress tab: streak, weekly chart, topic mastery and unlockable badges, all computed from saved reviews. */
 @Composable
 fun StatsScreen() {
     val container = appContainer()
-    val viewModel: StatsViewModel = viewModel(
-        factory = viewModelFactory { initializer { StatsViewModel(container.repository) } },
+    val viewModel: OverviewViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { OverviewViewModel(container.repository, container.settingsStore) }
+        },
     )
     val stats by viewModel.stats.collectAsStateWithLifecycle()
+    val cards by viewModel.cards.collectAsStateWithLifecycle()
     val ink = MaterialTheme.colorScheme.onPrimary
     val lime = MaterialTheme.colorScheme.primary
     val maxCount = (stats.week.maxOfOrNull { it.count } ?: 0).coerceAtLeast(1)
+    val achievements = Achievements.evaluate(stats, cards)
 
     Column(
         modifier = Modifier
@@ -67,7 +91,7 @@ fun StatsScreen() {
         }
 
         AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
-            Text("STREAK", style = MaterialTheme.typography.labelMedium, color = ink)
+            Text("STUDY DAYS IN A ROW", style = MaterialTheme.typography.labelMedium, color = ink)
             Spacer(Modifier.height(8.dp))
             Text(
                 text = if (stats.streakDays == 1) "1 day" else "${stats.streakDays} days",
@@ -142,6 +166,59 @@ fun StatsScreen() {
                 MasteryRow(label = entry.key, value = entry.value)
             }
         }
+
+        Text(
+            text = "Achievements",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            achievements.forEach { AchievementBadge(it) }
+        }
+        MutedText("Badges stay unlocked. They are never taken away.")
+    }
+}
+
+@Composable
+private fun AchievementBadge(achievement: Achievement) {
+    val state = if (achievement.unlocked) "unlocked" else "locked"
+    Column(
+        modifier = Modifier
+            .width(92.dp)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${achievement.title}, $state. ${achievement.description}"
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(
+                    if (achievement.unlocked) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.surfaceVariant,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = achievementIcon(achievement.id),
+                contentDescription = null,
+                tint = if (achievement.unlocked) Ink else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(30.dp),
+            )
+        }
+        Text(
+            text = achievement.title,
+            style = MaterialTheme.typography.labelMedium,
+            color = if (achievement.unlocked) MaterialTheme.colorScheme.onBackground
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+        )
     }
 }
 

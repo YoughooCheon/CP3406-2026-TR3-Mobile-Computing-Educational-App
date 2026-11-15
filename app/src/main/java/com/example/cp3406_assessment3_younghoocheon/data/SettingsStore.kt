@@ -3,6 +3,7 @@ package com.example.cp3406_assessment3_younghoocheon.data
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 
+/** Reads and writes [AppSettings] using Preferences DataStore. */
 class SettingsStore(private val context: Context) {
 
     private object Keys {
@@ -18,6 +20,9 @@ class SettingsStore(private val context: Context) {
         val highContrast = booleanPreferencesKey("high_contrast")
         val reduceMotion = booleanPreferencesKey("reduce_motion")
         val textSize = stringPreferencesKey("text_size")
+        val dailyGoal = intPreferencesKey("daily_goal")
+        val cardsPerSession = intPreferencesKey("cards_per_session")
+        val nickname = stringPreferencesKey("nickname")
     }
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { prefs ->
@@ -27,6 +32,9 @@ class SettingsStore(private val context: Context) {
             highContrast = prefs[Keys.highContrast] ?: false,
             reduceMotion = prefs[Keys.reduceMotion] ?: false,
             textSize = prefs[Keys.textSize] ?: "M",
+            dailyGoal = prefs[Keys.dailyGoal] ?: DEFAULT_DAILY_GOAL,
+            cardsPerSession = prefs[Keys.cardsPerSession] ?: 0,
+            nickname = prefs[Keys.nickname] ?: "Student",
         )
     }
 
@@ -48,6 +56,18 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setTextSize(value: String) {
         context.settingsDataStore.edit { it[Keys.textSize] = value }
+    }
+
+    suspend fun setDailyGoal(value: Int) {
+        context.settingsDataStore.edit { it[Keys.dailyGoal] = value }
+    }
+
+    suspend fun setCardsPerSession(value: Int) {
+        context.settingsDataStore.edit { it[Keys.cardsPerSession] = value }
+    }
+
+    suspend fun setNickname(value: String) {
+        context.settingsDataStore.edit { it[Keys.nickname] = value.trim().take(MAX_NICKNAME_LENGTH) }
     }
 
     suspend fun clear() {
