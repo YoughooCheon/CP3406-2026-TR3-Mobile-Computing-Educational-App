@@ -1,6 +1,8 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,11 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.cp3406_assessment3_younghoocheon.data.UniversityData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
@@ -20,6 +26,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BulletText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.FacultyStrip
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
+import com.example.cp3406_assessment3_younghoocheon.ui.components.PhotoCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 
 /** Overview of the Information Technology department at JCU Singapore. */
@@ -34,6 +41,15 @@ fun DepartmentScreen(onBack: () -> Unit, onOpenStaff: (String) -> Unit) {
     ) {
         BackHeader(title = "Department", onBack = onBack)
 
+        Image(
+            painter = painterResource(UniversityData.departmentBanner),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(2f)
+                .clip(RoundedCornerShape(28.dp)),
+        )
         Text(
             text = "Information Technology at JCU Singapore",
             style = MaterialTheme.typography.headlineMedium,
@@ -65,7 +81,11 @@ fun DepartmentScreen(onBack: () -> Unit, onOpenStaff: (String) -> Unit) {
 
         SectionHeader("Activities for students")
         UniversityData.activities.forEach { activity ->
-            AppCard(modifier = Modifier.fillMaxWidth()) {
+            PhotoCard(
+                image = activity.image,
+                modifier = Modifier.fillMaxWidth(),
+                imageRatio = 2f,
+            ) {
                 Text(
                     text = activity.title,
                     style = MaterialTheme.typography.titleSmall,

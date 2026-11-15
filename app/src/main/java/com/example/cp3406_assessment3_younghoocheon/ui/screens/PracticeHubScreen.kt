@@ -21,7 +21,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.R
 import com.example.cp3406_assessment3_younghoocheon.appContainer
+import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
@@ -55,9 +57,20 @@ fun PracticeHubScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ScreenTitle("Practice")
-                MutedText("Pick a topic and a way to practice")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ScreenTitle("Practice")
+                    MutedText("Pick a topic and a way to practice")
+                }
+                Avatar(
+                    initial = "",
+                    size = 72.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    image = R.drawable.avatar_student,
+                )
             }
         }
         item {
@@ -98,12 +111,12 @@ private fun TopicPracticeCard(
     onFlashcards: () -> Unit,
     onBuilder: () -> Unit,
 ) {
-    AppCard(modifier = Modifier.fillMaxWidth()) {
+    AppCard(modifier = Modifier.fillMaxWidth(), glow = topicColor(topic)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            IconBadge(icon = topicIcon(topic), color = topicColor(topic))
+            IconBadge(icon = topicIcon(topic), color = topicColor(topic), size = 56.dp)
             Column(Modifier.weight(1f)) {
                 Text(
                     text = if (topic == "All") "All topics" else topic,

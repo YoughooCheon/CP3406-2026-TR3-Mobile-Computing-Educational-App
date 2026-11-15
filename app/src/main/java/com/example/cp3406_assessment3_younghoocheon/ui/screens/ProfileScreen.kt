@@ -1,5 +1,6 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,11 +29,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.R
 import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
@@ -80,6 +85,14 @@ fun ProfileScreen(
     if (showAbout) {
         AlertDialog(
             onDismissRequest = { showAbout = false },
+            icon = {
+                Image(
+                    painter = painterResource(R.drawable.logo_mark),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.size(48.dp),
+                )
+            },
             title = { Text("About MemoryDesk") },
             text = {
                 Text(
@@ -101,12 +114,17 @@ fun ProfileScreen(
     ) {
         ScreenTitle("Profile")
 
-        AppCard(modifier = Modifier.fillMaxWidth()) {
+        AppCard(modifier = Modifier.fillMaxWidth(), glow = MaterialTheme.colorScheme.primary) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Avatar(initial = settings.nickname, size = 88.dp)
+                Avatar(
+                    initial = settings.nickname,
+                    size = 112.dp,
+                    color = MaterialTheme.colorScheme.primary,
+                    image = R.drawable.avatar_student,
+                )
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = settings.nickname,

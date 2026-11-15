@@ -3,7 +3,9 @@ package com.example.cp3406_assessment3_younghoocheon.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +38,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -104,16 +109,26 @@ fun NoticeBox(text: String, modifier: Modifier = Modifier) {
     }
 }
 
+/** Soft translucent circles in the top right corner. They make flat cards feel less empty. */
+fun Modifier.cornerGlow(color: Color): Modifier = this.drawBehind {
+    val corner = Offset(size.width, 0f)
+    drawCircle(color = color.copy(alpha = 0.10f), radius = size.minDimension * 0.95f, center = corner)
+    drawCircle(color = color.copy(alpha = 0.16f), radius = size.minDimension * 0.55f, center = corner)
+}
+
+/** The standard rounded card. Pass [glow] to add the decorative corner circles. */
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surface,
+    glow: Color? = null,
     onClick: (() -> Unit)? = null,
     onClickLabel: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val shape = RoundedCornerShape(28.dp)
-    val surface = modifier.clip(shape).background(containerColor)
+    val base = modifier.clip(shape).background(containerColor)
+    val surface = if (glow != null) base.cornerGlow(glow) else base
     val interactive = if (onClick != null) {
         surface.clickable(onClickLabel = onClickLabel, onClick = onClick)
     } else {
@@ -295,22 +310,33 @@ fun AppProgressBar(
     }
 }
 
+/** Round avatar. Shows [image] when given, otherwise the first letter of [initial]. */
 @Composable
 fun Avatar(
     initial: String,
     modifier: Modifier = Modifier,
     size: Dp = 48.dp,
     color: Color = Peach,
+    @DrawableRes image: Int? = null,
 ) {
     Box(
         modifier = modifier.size(size).clip(CircleShape).background(color),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = initial.take(1).uppercase(),
-            style = MaterialTheme.typography.titleMedium,
-            color = Ink,
-        )
+        if (image != null) {
+            Image(
+                painter = painterResource(image),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Text(
+                text = initial.take(1).uppercase(),
+                style = MaterialTheme.typography.titleMedium,
+                color = Ink,
+            )
+        }
     }
 }
 

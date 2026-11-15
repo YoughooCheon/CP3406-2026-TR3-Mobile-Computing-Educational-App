@@ -1,13 +1,17 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -29,6 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.R
 import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.data.forTopic
@@ -125,8 +134,11 @@ fun HomeScreen(
             onEditGoal = { showGoalDialog = true },
         )
 
-        SectionHeader("Quick practice")
-        QuickPracticeRow(onStartPractice = onStartPractice, onMore = onOpenPracticeHub)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SectionHeader("Quick practice", modifier = Modifier.weight(1f))
+            TextButton(onClick = onOpenPracticeHub) { Text("See all") }
+        }
+        QuickPracticeRow(onStartPractice = onStartPractice)
 
         SectionHeader("Meet the faculty")
         FacultyStrip(onOpenStaff = onOpenStaff)
@@ -157,7 +169,11 @@ private fun HomeHeader(nickname: String, streakDays: Int) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Avatar(initial = nickname)
+        Avatar(
+            initial = nickname,
+            color = MaterialTheme.colorScheme.primary,
+            image = R.drawable.avatar_student,
+        )
         Column(Modifier.weight(1f)) {
             Text(
                 text = "Hello, $nickname",
@@ -177,6 +193,7 @@ private fun HomeHeader(nickname: String, streakDays: Int) {
     }
 }
 
+/** Lime hero card with an illustration. The illustration is placed in the corner and clipped by the card. */
 @Composable
 private fun HeroCard(
     dueCount: Int,
@@ -189,37 +206,60 @@ private fun HeroCard(
     val lime = MaterialTheme.colorScheme.primary
     val allDone = dueCount == 0
 
-    AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
-        Text(
-            text = "PICK UP WHERE YOU LEFT OFF",
-            style = MaterialTheme.typography.labelMedium,
-            color = ink,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = when {
-                allDone -> "All done today"
-                dueCount == 1 -> "1 card due"
-                else -> "$dueCount cards due"
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(lime)
+            .drawBehind {
+                drawCircle(ink.copy(alpha = 0.05f), size.minDimension * 0.9f, Offset(0f, size.height))
+                drawCircle(ink.copy(alpha = 0.05f), size.minDimension * 0.5f, Offset(size.width * 0.55f, 0f))
             },
-            style = MaterialTheme.typography.headlineMedium,
-            color = ink,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.home_hero),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(170.dp)
+                .offset(x = 22.dp, y = (-6).dp),
         )
-        Spacer(Modifier.height(12.dp))
-        AppProgressBar(progress = progress, color = ink, track = ink.copy(alpha = 0.15f))
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "${reviewedToday.coerceAtMost(goal)} of $goal cards today. No timer, no penalty for skipping.",
-            style = MaterialTheme.typography.bodySmall,
-            color = ink,
-        )
-        Spacer(Modifier.height(20.dp))
-        PillButton(
-            text = if (allDone) "Practice again" else "Continue learning",
-            onClick = onContinue,
-            container = ink,
-            content = lime,
-        )
+        Column(modifier = Modifier.padding(20.dp)) {
+            Column(modifier = Modifier.padding(end = 140.dp)) {
+                Text(
+                    text = "PICK UP WHERE YOU LEFT OFF",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = ink,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = when {
+                        allDone -> "All done today"
+                        dueCount == 1 -> "1 card due"
+                        else -> "$dueCount cards due"
+                    },
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = ink,
+                )
+                Spacer(Modifier.height(10.dp))
+                AppProgressBar(progress = progress, color = ink, track = ink.copy(alpha = 0.15f))
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "${reviewedToday.coerceAtMost(goal)} of $goal cards today",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ink,
+                )
+            }
+            Spacer(Modifier.height(20.dp))
+            PillButton(
+                text = if (allDone) "Practice again" else "Continue learning",
+                onClick = onContinue,
+                modifier = Modifier.fillMaxWidth(),
+                container = ink,
+                content = lime,
+            )
+        }
     }
 }
 
@@ -227,6 +267,7 @@ private fun HeroCard(
 private fun DeckRow(topic: String, cardCount: Int, mastery: Float?, onClick: () -> Unit) {
     AppCard(
         modifier = Modifier.fillMaxWidth(),
+        glow = topicColor(topic),
         onClick = onClick,
         onClickLabel = "Practice $topic",
     ) {
@@ -261,7 +302,7 @@ private fun DeckRow(topic: String, cardCount: Int, mastery: Float?, onClick: () 
 
 @Composable
 private fun GoalCard(reviewedToday: Int, goal: Int, progress: Float, onEditGoal: () -> Unit) {
-    AppCard(modifier = Modifier.fillMaxWidth()) {
+    AppCard(modifier = Modifier.fillMaxWidth(), glow = MaterialTheme.colorScheme.primary) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Today's goal",
@@ -280,7 +321,7 @@ private fun GoalCard(reviewedToday: Int, goal: Int, progress: Float, onEditGoal:
 }
 
 @Composable
-private fun QuickPracticeRow(onStartPractice: (String) -> Unit, onMore: () -> Unit) {
+private fun QuickPracticeRow(onStartPractice: (String) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,7 +344,6 @@ private fun QuickPracticeRow(onStartPractice: (String) -> Unit, onMore: () -> Un
             }
         }
     }
-    TextButton(onClick = onMore) { Text("More ways to practice") }
 }
 
 @Composable

@@ -7,6 +7,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -212,4 +219,70 @@ fun NicknameDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
+}
+
+/** A card with a photo on top. The photo is decorative, so it has no content description. */
+@Composable
+fun PhotoCard(
+    @DrawableRes image: Int,
+    modifier: Modifier = Modifier,
+    imageRatio: Float = 16f / 9f,
+    onClick: (() -> Unit)? = null,
+    onClickLabel: String? = null,
+    overlay: @Composable BoxScope.() -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = RoundedCornerShape(28.dp)
+    val base = modifier.clip(shape).background(MaterialTheme.colorScheme.surface)
+    val interactive = if (onClick != null) {
+        base.clickable(onClickLabel = onClickLabel, onClick = onClick)
+    } else {
+        base
+    }
+    Column(modifier = interactive) {
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(imageRatio)) {
+            Image(
+                painter = painterResource(image),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colorStops = arrayOf(0.55f to Color.Transparent, 1f to Color(0x99000000)),
+                        ),
+                    ),
+            )
+            overlay()
+        }
+        Column(modifier = Modifier.padding(20.dp), content = content)
+    }
+}
+
+/** Friendly empty state with an illustration, shown when there is no data yet. */
+@Composable
+fun EmptyStateCard(
+    @DrawableRes image: Int,
+    title: String,
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    AppCard(modifier = modifier.fillMaxWidth(), glow = MaterialTheme.colorScheme.primary) {
+        Image(
+            painter = painterResource(image),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxWidth().height(170.dp),
+        )
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        MutedText(text)
+    }
 }

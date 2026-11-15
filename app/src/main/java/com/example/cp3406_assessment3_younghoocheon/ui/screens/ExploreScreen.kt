@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,6 +47,7 @@ import com.example.cp3406_assessment3_younghoocheon.data.StaffMember
 import com.example.cp3406_assessment3_younghoocheon.data.UniversityData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
+import com.example.cp3406_assessment3_younghoocheon.ui.components.PhotoCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
@@ -197,36 +199,45 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, onSearch
 
 @Composable
 private fun DepartmentCard(onClick: () -> Unit) {
-    val ink = MaterialTheme.colorScheme.onPrimary
-    val lime = MaterialTheme.colorScheme.primary
-    AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
-        Text("DEPARTMENT", style = MaterialTheme.typography.labelMedium, color = ink)
-        Spacer(Modifier.height(8.dp))
+    PhotoCard(
+        image = UniversityData.departmentBanner,
+        modifier = Modifier.fillMaxWidth(),
+        imageRatio = 2f,
+        overlay = {
+            TopicTag(
+                text = "DEPARTMENT",
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.TopStart).padding(14.dp),
+            )
+        },
+    ) {
         Text(
             text = "Information Technology",
             style = MaterialTheme.typography.headlineSmall,
-            color = ink,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(4.dp))
-        Text(
-            text = "IoT, cybersecurity, AI, data science and game design.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = ink,
-        )
+        MutedText("IoT, cybersecurity, AI, data science and game design.")
         Spacer(Modifier.height(16.dp))
-        PillButton(text = "About the department", onClick = onClick, container = ink, content = lime)
+        PillButton(text = "About the department", onClick = onClick, modifier = Modifier.fillMaxWidth())
     }
 }
 
 @Composable
 private fun ProgramCard(program: ProgramInfo, onClick: () -> Unit) {
-    AppCard(
+    PhotoCard(
+        image = program.image,
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         onClickLabel = "Open ${program.name}",
+        overlay = {
+            TopicTag(
+                text = program.level,
+                color = levelColor(program.level),
+                modifier = Modifier.align(Alignment.TopStart).padding(14.dp),
+            )
+        },
     ) {
-        TopicTag(text = program.level, color = levelColor(program.level))
-        Spacer(Modifier.height(10.dp))
         Text(
             text = program.name,
             style = MaterialTheme.typography.titleMedium,
@@ -281,16 +292,24 @@ private fun StaffRow(member: StaffMember, onClick: () -> Unit) {
 
 @Composable
 private fun ActivityCard(activity: CampusActivity) {
-    AppCard(modifier = Modifier.width(240.dp), containerColor = MaterialTheme.colorScheme.surfaceVariant) {
-        TopicTag(text = "Campus", color = Mint)
-        Spacer(Modifier.height(10.dp))
+    PhotoCard(
+        image = activity.image,
+        modifier = Modifier.width(260.dp),
+        imageRatio = 8f / 5f,
+    ) {
         Text(
             text = activity.title,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(4.dp))
-        MutedText(activity.description)
+        Text(
+            text = activity.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

@@ -41,12 +41,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.cp3406_assessment3_younghoocheon.R
 import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Achievement
 import com.example.cp3406_assessment3_younghoocheon.data.Achievements
 import com.example.cp3406_assessment3_younghoocheon.data.DayCount
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
+import com.example.cp3406_assessment3_younghoocheon.ui.components.EmptyStateCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
@@ -87,7 +89,11 @@ fun StatsScreen() {
         ScreenTitle("Progress")
 
         if (stats.totalReviewed == 0) {
-            NoticeBox("No reviews yet. Finish a practice session and your numbers will appear here.")
+            EmptyStateCard(
+                image = R.drawable.logo_mark,
+                title = "Your week starts here",
+                text = "Finish a practice session and your numbers will appear here.",
+            )
         }
 
         AppCard(modifier = Modifier.fillMaxWidth(), containerColor = lime) {
@@ -124,30 +130,32 @@ fun StatsScreen() {
             )
         }
 
-        AppCard(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Cards reviewed this week",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .semantics(mergeDescendants = true) {
-                        contentDescription = "Cards reviewed per day over the last seven days"
-                    },
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                stats.week.forEachIndexed { i, day ->
-                    WeekBar(
-                        day = day,
-                        fraction = day.count.toFloat() / maxCount,
-                        highlight = i == stats.week.lastIndex,
-                        modifier = Modifier.weight(1f),
-                    )
+        if (stats.totalReviewed > 0) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Cards reviewed this week",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .semantics(mergeDescendants = true) {
+                            contentDescription = "Cards reviewed per day over the last seven days"
+                        },
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    stats.week.forEachIndexed { i, day ->
+                        WeekBar(
+                            day = day,
+                            fraction = day.count.toFloat() / maxCount,
+                            highlight = i == stats.week.lastIndex,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }

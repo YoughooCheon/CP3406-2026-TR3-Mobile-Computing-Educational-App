@@ -23,12 +23,17 @@ data class ProgramInfo(
     val id: String,
     val name: String,
     val level: String,
+    @DrawableRes val image: Int,
     val summary: String,
     val sections: List<ProgramSection>,
     val accreditation: String?,
 )
 
-data class CampusActivity(val title: String, val description: String)
+data class CampusActivity(
+    val title: String,
+    val description: String,
+    @DrawableRes val image: Int,
+)
 
 /**
  * Static content summarised from the JCU Singapore Information Technology booklet (version SIN07/26).
@@ -37,6 +42,8 @@ data class CampusActivity(val title: String, val description: String)
 object UniversityData {
 
     const val SOURCE_NOTE = "Source: James Cook University Singapore, Information Technology booklet (SIN07/26)."
+
+    val departmentBanner: Int = R.drawable.department_banner
 
     val researchAreas = listOf("All", "Security", "IoT", "AI & Data", "Games", "Health", "Maths")
 
@@ -62,18 +69,22 @@ object UniversityData {
         CampusActivity(
             "Industry projects",
             "Parts of the curriculum have students work with industry on real-world projects.",
+            R.drawable.campus_industry,
         ),
         CampusActivity(
             "Guest lectures",
             "Experts from industry and academia visit to connect study topics with practice.",
+            R.drawable.campus_guest,
         ),
         CampusActivity(
             "Game Jams and Hackathons",
             "Events where students from other universities also take part, compete and network.",
+            R.drawable.campus_gamejam,
         ),
         CampusActivity(
             "Design Sprint",
             "A two-day event at the end of term where mixed teams solve a problem posed by industry.",
+            R.drawable.campus_sprint,
         ),
     )
 
@@ -82,6 +93,7 @@ object UniversityData {
             id = "bit",
             name = "Bachelor of Information Technology",
             level = "Undergraduate",
+            image = R.drawable.program_bachelor,
             summary = "Builds the knowledge and skills needed for professional IT careers, from " +
                     "programming and design thinking to games, data and mobile technologies.",
             sections = listOf(
@@ -112,6 +124,7 @@ object UniversityData {
             id = "mit",
             name = "Master of Information Technology",
             level = "Postgraduate",
+            image = R.drawable.program_master,
             summary = "Gives graduates of other disciplines practical skills to move into the IT industry, " +
                     "mixing technology with management and business operation skills.",
             sections = listOf(
@@ -137,6 +150,7 @@ object UniversityData {
             id = "phd",
             name = "PhD and Master of Philosophy",
             level = "Research",
+            image = R.drawable.program_phd,
             summary = "Supervised original research that leads to a thesis showing critical analysis and a " +
                     "significant contribution to knowledge in the field.",
             sections = listOf(
