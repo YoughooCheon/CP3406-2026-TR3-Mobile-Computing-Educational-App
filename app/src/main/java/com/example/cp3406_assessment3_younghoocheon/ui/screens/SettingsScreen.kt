@@ -44,7 +44,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.SettingsViewModel
 
-/** Preferences for learning, display and reminders. Every change is saved immediately with DataStore. */
+/** Preferences for learning and display. Every change is saved immediately with DataStore. */
 @Composable
 fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
     val container = appContainer()
@@ -152,21 +152,6 @@ fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
                 hint = "Turns off the card flip and bar animations",
                 checked = settings.reduceMotion,
                 onCheckedChange = viewModel::setReduceMotion,
-            )
-        }
-
-        SettingsGroup("Reminders") {
-            SwitchRow(
-                label = "Daily reminder",
-                hint = "Saved now. Notifications arrive in a later update.",
-                checked = settings.dailyReminder,
-                onCheckedChange = viewModel::setDailyReminder,
-            )
-            SwitchRow(
-                label = "Break reminders",
-                hint = "Saved now. Used in a later update.",
-                checked = settings.breakReminders,
-                onCheckedChange = viewModel::setBreakReminders,
             )
         }
 

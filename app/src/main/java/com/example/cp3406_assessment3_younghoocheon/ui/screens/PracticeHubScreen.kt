@@ -1,5 +1,7 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -8,14 +10,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,20 +34,36 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.R
 import com.example.cp3406_assessment3_younghoocheon.appContainer
-import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
+import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
+import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.IconBadge
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
+import com.example.cp3406_assessment3_younghoocheon.ui.components.PhotoCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
+import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
+import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicTag
 import com.example.cp3406_assessment3_younghoocheon.ui.components.topicIcon
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.Lime
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.Mint
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
+import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
 
-/** Practice tab: pick a topic, then choose flashcards or the Word Builder puzzle. */
+// To use your own pictures, add them to res/drawable-nodpi and change these two lines.
+private val FlashcardsImage = R.drawable.home_hero
+
+private val BuilderImage = R.drawable.empty_study
+
+/**
+ * Practice tab: today's numbers, the two learning activities with a short explanation,
+ * the session length, per-topic decks with mastery, and a few tips on why the activities work.
+ */
 @Composable
 fun PracticeHubScreen(
     onStartFlashcards: (String) -> Unit,
@@ -49,7 +76,11 @@ fun PracticeHubScreen(
         },
     )
     val cards by viewModel.cards.collectAsStateWithLifecycle()
+    val stats by viewModel.stats.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+
+    val dueToday = cards.count { it.id !in stats.reviewedTodayIds }
+    val topics = SampleData.topics.drop(1)
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -63,7 +94,7 @@ fun PracticeHubScreen(
             ) {
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ScreenTitle("Practice")
-                    MutedText("Pick a topic and a way to practice")
+                    MutedText("Pick a way to practice and a topic")
                 }
                 Avatar(
                     initial = "",
@@ -73,6 +104,42 @@ fun PracticeHubScreen(
                 )
             }
         }
+
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                StatTile(value = dueToday.toString(), label = "Due today", modifier = Modifier.weight(1f))
+                StatTile(value = stats.reviewedToday.toString(), label = "Done today", modifier = Modifier.weight(1f))
+                StatTile(value = settings.dailyGoal.toString(), label = "Daily goal", modifier = Modifier.weight(1f))
+            }
+        }
+
+        item { SectionHeader("Choose an activity") }
+        item {
+            ActivityCard(
+                image = FlashcardsImage,
+                tag = "ACTIVE RECALL",
+                tagColor = Lime,
+                title = "Flashcards",
+                description = "Read the question, try to remember the answer, then flip the card and rate how well you knew it.",
+                buttonText = "Start flashcards",
+                filled = true,
+                onStart = { onStartFlashcards("All") },
+            )
+        }
+        item {
+            ActivityCard(
+                image = BuilderImage,
+                tag = "PUZZLE",
+                tagColor = Sky,
+                title = "Word builder",
+                description = "The words of an answer are shuffled. Tap them in the right order to rebuild it.",
+                buttonText = "Start word builder",
+                filled = false,
+                onStart = { onStartBuilder("All") },
+            )
+        }
+
+        item { SectionHeader("Session length") }
         item {
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -93,12 +160,83 @@ fun PracticeHubScreen(
                 }
             }
         }
-        items(SampleData.topics, key = { it }) { topic ->
+
+        item { SectionHeader("Practice by topic") }
+        items(topics, key = { it }) { topic ->
+            val topicCards = cards.forTopic(topic)
             TopicPracticeCard(
                 topic = topic,
-                cardCount = cards.forTopic(topic).size,
+                cardCount = topicCards.size,
+                dueCount = topicCards.count { it.id !in stats.reviewedTodayIds },
+                mastery = stats.mastery[topic],
                 onFlashcards = { onStartFlashcards(topic) },
                 onBuilder = { onStartBuilder(topic) },
+            )
+        }
+
+        item { SectionHeader("Why it works") }
+        item { TipsCard() }
+    }
+}
+
+@Composable
+private fun StatTile(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        MutedText(label)
+    }
+}
+
+/** A photo card for one activity. [filled] makes the button lime, otherwise it is the quieter grey one. */
+@Composable
+private fun ActivityCard(
+    @DrawableRes image: Int,
+    tag: String,
+    tagColor: Color,
+    title: String,
+    description: String,
+    buttonText: String,
+    filled: Boolean,
+    onStart: () -> Unit,
+) {
+    PhotoCard(
+        image = image,
+        modifier = Modifier.fillMaxWidth(),
+        imageRatio = 2f,
+        overlay = {
+            TopicTag(
+                text = tag,
+                color = tagColor,
+                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+            )
+        },
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(4.dp))
+        MutedText(description)
+        Spacer(Modifier.height(16.dp))
+        if (filled) {
+            PillButton(text = buttonText, onClick = onStart, modifier = Modifier.fillMaxWidth())
+        } else {
+            PillButton(
+                text = buttonText,
+                onClick = onStart,
+                modifier = Modifier.fillMaxWidth(),
+                container = MaterialTheme.colorScheme.surfaceVariant,
+                content = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -108,24 +246,44 @@ fun PracticeHubScreen(
 private fun TopicPracticeCard(
     topic: String,
     cardCount: Int,
+    dueCount: Int,
+    mastery: Float?,
     onFlashcards: () -> Unit,
     onBuilder: () -> Unit,
 ) {
-    AppCard(modifier = Modifier.fillMaxWidth(), glow = topicColor(topic)) {
+    val color = topicColor(topic)
+
+    AppCard(modifier = Modifier.fillMaxWidth(), glow = color) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            IconBadge(icon = topicIcon(topic), color = topicColor(topic), size = 56.dp)
+            IconBadge(icon = topicIcon(topic), color = color, size = 56.dp)
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = if (topic == "All") "All topics" else topic,
+                    text = topic,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                MutedText("$cardCount cards")
+                MutedText("$cardCount cards, $dueCount due today")
             }
         }
+        Spacer(Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "Mastery",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            MutedText(if (mastery == null) "Not started" else "${(mastery * 100).toInt()}% Good or Easy")
+        }
+        Spacer(Modifier.height(8.dp))
+        AppProgressBar(
+            progress = mastery ?: 0f,
+            color = color,
+            track = MaterialTheme.colorScheme.outline,
+        )
         Spacer(Modifier.height(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PillButton(
@@ -142,6 +300,50 @@ private fun TopicPracticeCard(
                 content = MaterialTheme.colorScheme.onSurface,
                 showArrow = false,
             )
+        }
+    }
+}
+
+@Composable
+private fun TipsCard() {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        TipRow(
+            icon = Icons.Filled.Refresh,
+            color = Peach,
+            title = "Recall before you peek",
+            text = "Trying to remember an answer first makes it stick better than reading it again.",
+        )
+        Spacer(Modifier.height(16.dp))
+        TipRow(
+            icon = Icons.Filled.DateRange,
+            color = Mint,
+            title = "Little and often",
+            text = "Short sessions on several days are easier to keep up than one long session.",
+        )
+        Spacer(Modifier.height(16.dp))
+        TipRow(
+            icon = Icons.Filled.Create,
+            color = Sky,
+            title = "Put it in order",
+            text = "Rebuilding an answer word by word trains you to notice how an idea is put together.",
+        )
+    }
+}
+
+@Composable
+private fun TipRow(icon: ImageVector, color: Color, title: String, text: String) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        IconBadge(icon = icon, color = color, size = 44.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            MutedText(text)
         }
     }
 }

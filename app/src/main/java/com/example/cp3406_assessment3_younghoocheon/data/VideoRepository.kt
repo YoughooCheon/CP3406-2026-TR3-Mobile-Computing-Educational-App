@@ -13,8 +13,15 @@ data class VideoInfo(
     val thumbnailUrl: String,
 )
 
-class VideoRepository {
-    suspend fun fetch(videoUrl: String): Result<VideoInfo> = withContext(Dispatchers.IO) {
+/** Where the Learn screen gets lecture details from. Tests replace it with a fake. */
+interface VideoSource {
+    suspend fun fetch(videoUrl: String): Result<VideoInfo>
+}
+
+/** Fetches lecture details from the public YouTube oEmbed endpoint. */
+class VideoRepository : VideoSource {
+
+    override suspend fun fetch(videoUrl: String): Result<VideoInfo> = withContext(Dispatchers.IO) {
         runCatching {
             val endpoint = "https://www.youtube.com/oembed?format=json&url=" +
                     URLEncoder.encode(videoUrl, "UTF-8")
@@ -27,15 +34,22 @@ class VideoRepository {
                     error("HTTP " + connection.responseCode)
                 }
                 val body = connection.inputStream.bufferedReader().use { it.readText() }
-                val json = JSONObject(body)
-                VideoInfo(
-                    title = json.getString("title"),
-                    author = json.getString("author_name"),
-                    thumbnailUrl = json.getString("thumbnail_url"),
-                )
+                parseOEmbed(body)
             } finally {
                 connection.disconnect()
             }
+        }
+    }
+
+    companion object {
+        /** Turns an oEmbed JSON body into [VideoInfo]. Throws if a required field is missing. */
+        fun parseOEmbed(body: String): VideoInfo {
+            val json = JSONObject(body)
+            return VideoInfo(
+                title = json.getString("title"),
+                author = json.getString("author_name"),
+                thumbnailUrl = json.getString("thumbnail_url"),
+            )
         }
     }
 }

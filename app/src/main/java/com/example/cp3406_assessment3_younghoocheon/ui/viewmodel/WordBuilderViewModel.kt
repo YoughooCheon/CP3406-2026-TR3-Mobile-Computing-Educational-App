@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
 import com.example.cp3406_assessment3_younghoocheon.data.Rating
-import com.example.cp3406_assessment3_younghoocheon.data.SettingsStore
+import com.example.cp3406_assessment3_younghoocheon.data.SettingsSource
 import com.example.cp3406_assessment3_younghoocheon.data.StudyRepository
 import com.example.cp3406_assessment3_younghoocheon.data.Tile
 import com.example.cp3406_assessment3_younghoocheon.data.WordPuzzle
@@ -29,7 +29,7 @@ data class BuilderState(
 /** Word Builder: put the shuffled words of a card's answer back in order. Each check is saved as a review. */
 class WordBuilderViewModel(
     private val repository: StudyRepository,
-    settingsStore: SettingsStore,
+    settingsSource: SettingsSource,
     topic: String,
 ) : ViewModel() {
 
@@ -41,7 +41,7 @@ class WordBuilderViewModel(
             val playable = repository.observeCards().first()
                 .forTopic(topic)
                 .filter { WordPuzzle.isPlayable(it.back) }
-            val limit = settingsStore.settings.first().cardsPerSession
+            val limit = settingsSource.settings.first().cardsPerSession
             val queue = if (limit > 0) playable.take(limit) else playable
             _state.value = deal(BuilderState(queue = queue, loading = false), 0)
         }

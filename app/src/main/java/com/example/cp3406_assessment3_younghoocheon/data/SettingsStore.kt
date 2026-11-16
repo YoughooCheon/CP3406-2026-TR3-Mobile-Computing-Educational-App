@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 
 /** Reads and writes [AppSettings] using Preferences DataStore. */
-class SettingsStore(private val context: Context) {
+class SettingsStore(private val context: Context) : SettingsSource {
 
     private object Keys {
         val dailyReminder = booleanPreferencesKey("daily_reminder")
@@ -25,7 +25,7 @@ class SettingsStore(private val context: Context) {
         val nickname = stringPreferencesKey("nickname")
     }
 
-    val settings: Flow<AppSettings> = context.settingsDataStore.data.map { prefs ->
+    override val settings: Flow<AppSettings> = context.settingsDataStore.data.map { prefs ->
         AppSettings(
             dailyReminder = prefs[Keys.dailyReminder] ?: false,
             breakReminders = prefs[Keys.breakReminders] ?: true,
@@ -70,7 +70,7 @@ class SettingsStore(private val context: Context) {
         context.settingsDataStore.edit { it[Keys.nickname] = value.trim().take(MAX_NICKNAME_LENGTH) }
     }
 
-    suspend fun clear() {
+    override suspend fun clear() {
         context.settingsDataStore.edit { it.clear() }
     }
 }

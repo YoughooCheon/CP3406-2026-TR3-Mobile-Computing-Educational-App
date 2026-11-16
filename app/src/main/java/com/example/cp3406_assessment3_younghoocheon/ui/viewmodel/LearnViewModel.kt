@@ -3,7 +3,7 @@ package com.example.cp3406_assessment3_younghoocheon.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cp3406_assessment3_younghoocheon.data.VideoInfo
-import com.example.cp3406_assessment3_younghoocheon.data.VideoRepository
+import com.example.cp3406_assessment3_younghoocheon.data.VideoSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +16,7 @@ sealed interface LearnState {
 }
 
 class LearnViewModel(
-    private val repository: VideoRepository,
+    private val repository: VideoSource,
     private val videoUrl: String,
 ) : ViewModel() {
 

@@ -13,8 +13,9 @@ android {
         applicationId = "com.example.cp3406_assessment3_younghoocheon"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.3-data"
+        versionCode = 3
+        versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -34,6 +35,11 @@ android {
     }
 }
 
+// Room writes its schema as JSON so every database version is kept in version control.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
     implementation("androidx.core:core-ktx:1.15.0")
@@ -51,4 +57,17 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Local unit tests (model, repository and ViewModel logic, no emulator needed)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    // Android's own org.json is only a stub in local tests, so use the real library there.
+    testImplementation("org.json:json:20240303")
+
+    // Instrumented tests (Compose UI, run on an emulator or device)
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
