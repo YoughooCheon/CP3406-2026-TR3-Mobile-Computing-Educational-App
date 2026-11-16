@@ -21,9 +21,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -200,84 +197,34 @@ private fun PitchArt(modifier: Modifier = Modifier) {
     }
 }
 
-/** Page 2: a flashcard and a Word Builder card, drawn with Compose so no extra images are needed. */
+/** Page 2: the student with flashcards on the lime circle, with tags for the two ways to practice. */
 @Composable
 private fun PracticeArt(modifier: Modifier = Modifier) {
-    val lime = MaterialTheme.colorScheme.primary
-
     Box(modifier = modifier.clearAndSetSemantics { }) {
         ArtBackdrop()
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 24.dp)
-                .fillMaxWidth(0.72f)
-                .graphicsLayer { rotationZ = -4f }
-                .clip(RoundedCornerShape(28.dp))
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = "QUESTION",
-                style = MaterialTheme.typography.labelMedium,
-                color = lime,
-            )
-            Text(
-                text = "What is active recall?",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            MutedText("Tap the card to flip")
-        }
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 24.dp)
-                .fillMaxWidth(0.8f)
-                .graphicsLayer { rotationZ = 3f }
-                .clip(RoundedCornerShape(28.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = "WORD BUILDER",
-                style = MaterialTheme.typography.labelMedium,
-                color = lime,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                WordTile("Recall", Mint)
-                WordTile("before", Sky)
-                WordTile("looking", Peach)
-            }
-        }
+        Image(
+            painter = painterResource(R.drawable.welcome_practice),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.BottomCenter,
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxHeight(0.96f),
+        )
+        FloatingTag("Flashcards", Mint, -8f, Modifier.align(Alignment.TopStart).padding(top = 28.dp))
+        FloatingTag("Word builder", Peach, 6f, Modifier.align(Alignment.BottomEnd).padding(bottom = 36.dp))
     }
 }
 
-/** Page 3: a lock on the lime circle with tags for the privacy choices. */
+/** Page 3: the phone with a shield and a lock, floating over the lime circle. */
 @Composable
 private fun PrivacyArt(modifier: Modifier = Modifier) {
     Box(modifier = modifier.clearAndSetSemantics { }) {
         ArtBackdrop()
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(132.dp)
-                .clip(RoundedCornerShape(36.dp))
-                .background(Ink),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Lock,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(64.dp),
-            )
-        }
-        FloatingTag("No account", Mint, -8f, Modifier.align(Alignment.TopStart).padding(top = 28.dp))
-        FloatingTag("No ads", Sky, 7f, Modifier.align(Alignment.CenterEnd).padding(bottom = 60.dp))
-        FloatingTag("Export or delete", Peach, -5f, Modifier.align(Alignment.BottomStart).padding(bottom = 90.dp))
+        Image(
+            painter = painterResource(R.drawable.welcome_privacy),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = 4.dp),
+        )
     }
 }
 
@@ -298,18 +245,6 @@ private fun BoxScope.ArtBackdrop() {
             .clip(CircleShape)
             .background(Mint.copy(alpha = 0.35f)),
     )
-}
-
-@Composable
-private fun WordTile(text: String, color: Color) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(color)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-    ) {
-        Text(text = text, color = Ink, style = MaterialTheme.typography.labelLarge, maxLines = 1)
-    }
 }
 
 @Composable

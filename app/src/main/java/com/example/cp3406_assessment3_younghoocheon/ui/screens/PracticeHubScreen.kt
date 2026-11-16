@@ -1,16 +1,19 @@
 package com.example.cp3406_assessment3_younghoocheon.ui.screens
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,13 +46,12 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.IconBadge
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
-import com.example.cp3406_assessment3_younghoocheon.ui.components.PhotoCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
+import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicArt
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicTag
-import com.example.cp3406_assessment3_younghoocheon.ui.components.topicIcon
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Lime
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Mint
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
@@ -55,10 +59,11 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
 
-// To use your own pictures, add them to res/drawable-nodpi and change these two lines.
-private val FlashcardsImage = R.drawable.home_hero
-
-private val BuilderImage = R.drawable.empty_study
+// Pictures for the two activities. They live in res/drawable-nodpi.
+// The activity pictures are portrait (842 x 1264), so they are shown at exactly that ratio and never cropped.
+private val FlashcardsImage = R.drawable.practice_flashcards
+private val BuilderImage = R.drawable.practice_builder
+private const val ACTIVITY_IMAGE_RATIO = 842f / 1264f
 
 /**
  * Practice tab: today's numbers, the two learning activities with a short explanation,
@@ -120,7 +125,7 @@ fun PracticeHubScreen(
                 tag = "ACTIVE RECALL",
                 tagColor = Lime,
                 title = "Flashcards",
-                description = "Read the question, try to remember the answer, then flip the card and rate how well you knew it.",
+                description = "Recall the answer, flip the card, then rate how well you knew it.",
                 buttonText = "Start flashcards",
                 filled = true,
                 onStart = { onStartFlashcards("All") },
@@ -132,7 +137,7 @@ fun PracticeHubScreen(
                 tag = "PUZZLE",
                 tagColor = Sky,
                 title = "Word builder",
-                description = "The words of an answer are shuffled. Tap them in the right order to rebuild it.",
+                description = "The words of an answer are shuffled. Tap them in the right order.",
                 buttonText = "Start word builder",
                 filled = false,
                 onStart = { onStartBuilder("All") },
@@ -196,7 +201,11 @@ private fun StatTile(value: String, label: String, modifier: Modifier = Modifier
     }
 }
 
-/** A photo card for one activity. [filled] makes the button lime, otherwise it is the quieter grey one. */
+/**
+ * A card for one activity: the picture on the left at its own ratio (so nothing is cropped),
+ * the tag, title and short text on the right, and the start button across the bottom.
+ * [filled] makes the button lime, otherwise it is the quieter grey one.
+ */
 @Composable
 private fun ActivityCard(
     @DrawableRes image: Int,
@@ -208,25 +217,30 @@ private fun ActivityCard(
     filled: Boolean,
     onStart: () -> Unit,
 ) {
-    PhotoCard(
-        image = image,
-        modifier = Modifier.fillMaxWidth(),
-        imageRatio = 2f,
-        overlay = {
-            TopicTag(
-                text = tag,
-                color = tagColor,
-                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Image(
+                painter = painterResource(image),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .width(124.dp)
+                    .aspectRatio(ACTIVITY_IMAGE_RATIO)
+                    .clip(RoundedCornerShape(20.dp)),
             )
-        },
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(4.dp))
-        MutedText(description)
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TopicTag(text = tag, color = tagColor)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                MutedText(description)
+            }
+        }
         Spacer(Modifier.height(16.dp))
         if (filled) {
             PillButton(text = buttonText, onClick = onStart, modifier = Modifier.fillMaxWidth())
@@ -258,7 +272,7 @@ private fun TopicPracticeCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            IconBadge(icon = topicIcon(topic), color = color, size = 56.dp)
+            TopicArt(topic = topic, color = color, size = 88.dp)
             Column(Modifier.weight(1f)) {
                 Text(
                     text = topic,

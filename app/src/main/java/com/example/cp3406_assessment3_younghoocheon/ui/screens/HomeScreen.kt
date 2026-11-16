@@ -51,7 +51,6 @@ import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
-import com.example.cp3406_assessment3_younghoocheon.ui.components.IconBadge
 import com.example.cp3406_assessment3_younghoocheon.ui.components.InfoPill
 import com.example.cp3406_assessment3_younghoocheon.ui.components.FacultyStrip
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
@@ -59,7 +58,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Thumbnail
-import com.example.cp3406_assessment3_younghoocheon.ui.components.topicIcon
+import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicArt
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
 
@@ -275,7 +274,7 @@ private fun DeckRow(topic: String, cardCount: Int, mastery: Float?, onClick: () 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            IconBadge(icon = topicIcon(topic), color = topicColor(topic))
+            TopicArt(topic = topic, color = topicColor(topic), size = 64.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
                     text = topic,
@@ -335,7 +334,7 @@ private fun QuickPracticeRow(onStartPractice: (String) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                IconBadge(icon = topicIcon(topic), color = topicColor(topic), size = 56.dp)
+                TopicArt(topic = topic, color = topicColor(topic), size = 56.dp)
                 Text(
                     text = topic,
                     style = MaterialTheme.typography.labelMedium,
