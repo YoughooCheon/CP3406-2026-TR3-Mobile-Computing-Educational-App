@@ -42,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.cp3406_assessment3_younghoocheon.ui.components.screenBackground
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.AddCardScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.CardsScreen
@@ -57,6 +58,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.screens.ProfileScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.ProgramDetailScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.SettingsScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.StatsScreen
+import com.example.cp3406_assessment3_younghoocheon.ui.screens.TopicGuideScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.WelcomeScreen
 import com.example.cp3406_assessment3_younghoocheon.ui.screens.WordBuilderScreen
 
@@ -81,11 +83,16 @@ object Routes {
     const val BUILDER = "builder/{topic}"
     const val STAFF = "staff/{id}"
     const val PROGRAM = "program/{id}"
+    const val TOPIC_GUIDE = "topic_guide/{topic}"
+
+    /** Links such as memorydesk://topic/Privacy open the app on that screen (see AndroidManifest.xml). */
+    const val LINK_BASE = "memorydesk://"
 
     fun practice(topic: String) = "practice/$topic"
     fun builder(topic: String) = "builder/$topic"
     fun staff(id: String) = "staff/$id"
     fun program(id: String) = "program/$id"
+    fun topicGuide(topic: String) = "topic_guide/$topic"
 }
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
@@ -163,10 +170,14 @@ fun AppNavHost() {
                     onOpenLearn = { navController.navigate(Routes.LEARN) },
                 )
             }
-            composable(Routes.PRACTICE_HUB) {
+            composable(
+                route = Routes.PRACTICE_HUB,
+                deepLinks = listOf(navDeepLink { uriPattern = Routes.LINK_BASE + "practice" }),
+            ) {
                 PracticeHubScreen(
                     onStartFlashcards = { navController.navigate(Routes.practice(it)) },
                     onStartBuilder = { navController.navigate(Routes.builder(it)) },
+                    onOpenGuide = { navController.navigate(Routes.topicGuide(it)) },
                 )
             }
             composable(Routes.STATS) { StatsScreen() }
@@ -192,7 +203,10 @@ fun AppNavHost() {
                 )
             }
             composable(Routes.ADD_CARD) { AddCardScreen(onBack = back) }
-            composable(Routes.LEARN) { LearnScreen(onBack = back) }
+            composable(
+                route = Routes.LEARN,
+                deepLinks = listOf(navDeepLink { uriPattern = Routes.LINK_BASE + "learn" }),
+            ) { LearnScreen(onBack = back) }
             composable(Routes.DEPARTMENT) {
                 DepartmentScreen(
                     onBack = back,
@@ -206,6 +220,18 @@ fun AppNavHost() {
                 PracticeScreen(
                     topic = entry.arguments?.getString(Routes.TOPIC_ARG) ?: "All",
                     onClose = back,
+                )
+            }
+            composable(
+                route = Routes.TOPIC_GUIDE,
+                arguments = stringArgument(Routes.TOPIC_ARG),
+                deepLinks = listOf(navDeepLink { uriPattern = Routes.LINK_BASE + "topic/{topic}" }),
+            ) { entry ->
+                val topic = entry.arguments?.getString(Routes.TOPIC_ARG).orEmpty()
+                TopicGuideScreen(
+                    topic = topic,
+                    onBack = back,
+                    onPractice = { navController.navigate(Routes.practice(topic)) },
                 )
             }
             composable(

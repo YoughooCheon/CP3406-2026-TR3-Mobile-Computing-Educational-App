@@ -30,10 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
@@ -41,16 +37,12 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.screenBackground
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.SettingsViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun PrivacyScreen(onBack: () -> Unit) {
-    val container = appContainer()
-    val viewModel: SettingsViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { SettingsViewModel(container.settingsStore, container.repository) }
-        },
-    )
+    val viewModel: SettingsViewModel = appViewModel { SettingsViewModel(it.settingsStore, it.repository) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var confirmDelete by remember { mutableStateOf(false) }
@@ -60,7 +52,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete all data?") },
-            text = { Text("This removes your own cards, review history, and settings from this device. It cannot be undone.") },
+            text = { Text("This removes your own cards, review history, settings, and saved Wikipedia summaries from this device. It cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -93,7 +85,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Your nickname, cards you create, which card you reviewed, your rating, the time, and your settings",
+                text = "Your nickname, cards you create, which card you reviewed, your rating, the time, and your settings. Also a saved copy of the public Wikipedia summaries you open, so they work offline",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -125,7 +117,7 @@ fun PrivacyScreen(onBack: () -> Unit) {
             MutedText("The app does not send notifications yet. It works fully without them.")
         }
 
-        NoticeBox("YouTube and Google Scholar links open outside the app. The Learn screen asks YouTube for the lecture title and thumbnail, so YouTube can see your IP address. Their privacy policies apply.")
+        NoticeBox("YouTube, Wikipedia and Google Scholar links open outside the app. The Lectures screen asks YouTube, and the topic guide asks Wikipedia, so they can see your IP address. Their privacy policies apply.")
 
         PillButton(
             text = "Export my data (JSON)",

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,11 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.R
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
@@ -58,6 +55,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 // Pictures for the two activities. They live in res/drawable-nodpi.
 // The activity pictures are portrait (842 x 1264), so they are shown at exactly that ratio and never cropped.
@@ -73,13 +71,9 @@ private const val ACTIVITY_IMAGE_RATIO = 842f / 1264f
 fun PracticeHubScreen(
     onStartFlashcards: (String) -> Unit,
     onStartBuilder: (String) -> Unit,
+    onOpenGuide: (String) -> Unit,
 ) {
-    val container = appContainer()
-    val viewModel: OverviewViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { OverviewViewModel(container.repository, container.settingsStore) }
-        },
-    )
+    val viewModel: OverviewViewModel = appViewModel { OverviewViewModel(it.repository, it.settingsStore) }
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -176,6 +170,7 @@ fun PracticeHubScreen(
                 mastery = stats.mastery[topic],
                 onFlashcards = { onStartFlashcards(topic) },
                 onBuilder = { onStartBuilder(topic) },
+                onGuide = { onOpenGuide(topic) },
             )
         }
 
@@ -264,6 +259,7 @@ private fun TopicPracticeCard(
     mastery: Float?,
     onFlashcards: () -> Unit,
     onBuilder: () -> Unit,
+    onGuide: () -> Unit,
 ) {
     val color = topicColor(topic)
 
@@ -314,6 +310,9 @@ private fun TopicPracticeCard(
                 content = MaterialTheme.colorScheme.onSurface,
                 showArrow = false,
             )
+        }
+        TextButton(onClick = onGuide, modifier = Modifier.fillMaxWidth()) {
+            Text("About $topic (Wikipedia)")
         }
     }
 }
