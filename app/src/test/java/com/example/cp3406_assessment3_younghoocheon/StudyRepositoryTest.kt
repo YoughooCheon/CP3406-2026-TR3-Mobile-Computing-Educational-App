@@ -1,9 +1,5 @@
-package com.example.cp3406_assessment3_younghoocheon
+package com.example.cp3406_assessment3_younghoocheon.data
 
-import com.example.cp3406_assessment3_younghoocheon.data.AppSettings
-import com.example.cp3406_assessment3_younghoocheon.data.CUSTOM_ID_OFFSET
-import com.example.cp3406_assessment3_younghoocheon.data.Rating
-import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,7 +7,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
-import kotlin.compareTo
 
 class StudyRepositoryTest {
 
@@ -44,7 +39,7 @@ class StudyRepositoryTest {
 
         assertEquals("What is a Repository?", added.front)
         assertEquals("Memory", added.topic)
-        assertTrue(added.id compareTo CUSTOM_ID_OFFSET)
+        assertTrue(added.id > CUSTOM_ID_OFFSET)
         assertEquals(SampleData.cards.size + 1, repository.observeCards().first().size)
     }
 

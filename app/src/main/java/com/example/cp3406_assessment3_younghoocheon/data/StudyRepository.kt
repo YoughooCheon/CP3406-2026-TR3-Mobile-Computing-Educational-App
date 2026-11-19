@@ -11,7 +11,9 @@ import org.json.JSONObject
 class StudyRepository(
     private val reviewDao: ReviewDao,
     private val cardDao: CardDao,
-    private val settingsStore: SettingsStore,
+    private val settingsSource: SettingsSource,
+    /** Clears extra saved data (the Wikipedia summaries) when the user deletes everything. */
+    private val clearCache: suspend () -> Unit = {},
 ) {
     fun observeCards(): Flow<List<Flashcard>> = cardDao.observeAll().map { custom ->
         SampleData.cards + custom.map { it.toFlashcard() }
@@ -49,13 +51,14 @@ class StudyRepository(
     suspend fun deleteAll() {
         reviewDao.deleteAll()
         cardDao.deleteAll()
-        settingsStore.clear()
+        settingsSource.clear()
+        clearCache()
     }
 
     suspend fun exportJson(): String {
         val reviews = reviewDao.getAll()
         val customCards = cardDao.getAll()
-        val settings = settingsStore.settings.first()
+        val settings = settingsSource.settings.first()
         val reviewArray = JSONArray()
         reviews.forEach { review ->
             reviewArray.put(

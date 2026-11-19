@@ -3,12 +3,29 @@ package com.example.cp3406_assessment3_younghoocheon
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertRangeInfoEquals
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NicknameDialog
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.LocalReduceMotion
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.MemoryDeskTheme
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
 
 /** GUI tests for the reusable Compose components. They run on an emulator or device. */
 class ComponentTest {
@@ -91,12 +108,7 @@ class ComponentTest {
     fun nicknameDialog_savesTheNewNameAndRejectsCharactersBeyondTheLimit() {
         var saved: String? = null
         composeRule.setContent {
-            MemoryDeskTheme {
-                NicknameDialog(
-                    current = "Student",
-                    onDismiss = {},
-                    onSave = { saved = it })
-            }
+            MemoryDeskTheme { NicknameDialog(current = "Student", onDismiss = {}, onSave = { saved = it }) }
         }
 
         composeRule.onNode(hasSetTextAction()).performTextClearance()

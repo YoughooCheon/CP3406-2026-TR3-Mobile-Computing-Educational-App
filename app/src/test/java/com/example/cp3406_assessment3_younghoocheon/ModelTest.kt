@@ -1,17 +1,9 @@
-package com.example.cp3406_assessment3_younghoocheon
+package com.example.cp3406_assessment3_younghoocheon.data
 
-import com.example.cp3406_assessment3_younghoocheon.data.Achievements
-import com.example.cp3406_assessment3_younghoocheon.data.AppSettings
-import com.example.cp3406_assessment3_younghoocheon.data.CUSTOM_ID_OFFSET
-import com.example.cp3406_assessment3_younghoocheon.data.DEFAULT_DAILY_GOAL
-import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
-import com.example.cp3406_assessment3_younghoocheon.data.Rating
-import com.example.cp3406_assessment3_younghoocheon.data.SampleData
-import com.example.cp3406_assessment3_younghoocheon.data.StudyStats
-import com.example.cp3406_assessment3_younghoocheon.data.VideoInfo
-import com.example.cp3406_assessment3_younghoocheon.data.VideoRepository
-import com.example.cp3406_assessment3_younghoocheon.data.forTopic
-import kotlin.collections.plus
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class ModelTest {
 

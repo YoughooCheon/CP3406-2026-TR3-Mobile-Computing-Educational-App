@@ -1,17 +1,28 @@
-package com.example.cp3406_assessment3_younghoocheon
+package com.example.cp3406_assessment3_younghoocheon.ui.viewmodel
 
 import com.example.cp3406_assessment3_younghoocheon.data.AppSettings
+import com.example.cp3406_assessment3_younghoocheon.data.FakeCardDao
+import com.example.cp3406_assessment3_younghoocheon.data.FakeReviewDao
+import com.example.cp3406_assessment3_younghoocheon.data.FakeSettingsSource
 import com.example.cp3406_assessment3_younghoocheon.data.Rating
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
+import com.example.cp3406_assessment3_younghoocheon.data.StudyRepository
 import com.example.cp3406_assessment3_younghoocheon.data.VideoInfo
 import com.example.cp3406_assessment3_younghoocheon.data.VideoSource
 import com.example.cp3406_assessment3_younghoocheon.data.WordPuzzle
-import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnState
-import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnViewModel
-import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.PracticeViewModel
-import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.WordBuilderViewModel
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
 class ViewModelTest {
 
@@ -177,8 +188,7 @@ class ViewModelTest {
 
     // LearnViewModel
 
-    private class FakeVideoSource(private val results: MutableList<Result<VideoInfo>>) :
-        VideoSource {
+    private class FakeVideoSource(private val results: MutableList<Result<VideoInfo>>) : VideoSource {
         var calls = 0
         override suspend fun fetch(videoUrl: String): Result<VideoInfo> {
             calls += 1
@@ -190,8 +200,7 @@ class ViewModelTest {
 
     @Test
     fun learn_successShowsTheLoadedInfo() = runTest {
-        val viewModel =
-            LearnViewModel(FakeVideoSource(mutableListOf(Result.success(info))), "https://video")
+        val viewModel = LearnViewModel(FakeVideoSource(mutableListOf(Result.success(info))), "https://video")
 
         val state = viewModel.state.value
 
