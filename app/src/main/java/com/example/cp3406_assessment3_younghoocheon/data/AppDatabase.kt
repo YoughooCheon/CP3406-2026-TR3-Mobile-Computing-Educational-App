@@ -7,10 +7,15 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [ReviewEntity::class, CardEntity::class], version = 2, exportSchema = true)
+@Database(
+    entities = [ReviewEntity::class, CardEntity::class, TopicSummaryEntity::class],
+    version = 3,
+    exportSchema = true,
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun reviewDao(): ReviewDao
     abstract fun cardDao(): CardDao
+    abstract fun topicSummaryDao(): TopicSummaryDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -26,9 +31,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 3 adds the saved Wikipedia summaries used by the topic guide. */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `topic_summaries` (" +
+                            "`title` TEXT NOT NULL, " +
+                            "`description` TEXT NOT NULL, " +
+                            "`extract` TEXT NOT NULL, " +
+                            "`pageUrl` TEXT NOT NULL, " +
+                            "`fetchedAt` INTEGER NOT NULL, " +
+                            "PRIMARY KEY(`title`))",
+                )
+            }
+        }
+
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "memorydesk.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }
