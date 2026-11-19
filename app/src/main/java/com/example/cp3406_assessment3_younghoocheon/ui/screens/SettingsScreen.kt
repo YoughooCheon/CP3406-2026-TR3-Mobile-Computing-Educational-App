@@ -31,10 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
@@ -43,16 +39,12 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.SettingsViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 /** Preferences for learning and display. Every change is saved immediately with DataStore. */
 @Composable
 fun SettingsScreen(onBack: () -> Unit, onOpenPrivacy: () -> Unit) {
-    val container = appContainer()
-    val viewModel: SettingsViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { SettingsViewModel(container.settingsStore, container.repository) }
-        },
-    )
+    val viewModel: SettingsViewModel = appViewModel { SettingsViewModel(it.settingsStore, it.repository) }
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     var showNickname by rememberSaveable { mutableStateOf(false) }
 

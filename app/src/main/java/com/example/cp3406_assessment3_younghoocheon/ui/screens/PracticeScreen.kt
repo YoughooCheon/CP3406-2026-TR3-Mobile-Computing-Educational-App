@@ -32,10 +32,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
 import com.example.cp3406_assessment3_younghoocheon.data.Rating
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
@@ -51,13 +47,11 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sand
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.PracticeViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 @Composable
 fun PracticeScreen(topic: String, onClose: () -> Unit) {
-    val container = appContainer()
-    val viewModel: PracticeViewModel = viewModel(
-        factory = viewModelFactory { initializer { PracticeViewModel(container.repository, container.settingsStore, topic) } },
-    )
+    val viewModel: PracticeViewModel = appViewModel { PracticeViewModel(it.repository, it.settingsStore, topic) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val cards = state.queue
     val index = state.index

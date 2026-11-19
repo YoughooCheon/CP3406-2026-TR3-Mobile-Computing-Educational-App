@@ -33,10 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Tile
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppProgressBar
@@ -50,16 +46,12 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.BuilderState
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.WordBuilderViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 /** Puzzle activity: tap the shuffled words in the right order to rebuild a card's answer. */
 @Composable
 fun WordBuilderScreen(topic: String, onClose: () -> Unit) {
-    val container = appContainer()
-    val viewModel: WordBuilderViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { WordBuilderViewModel(container.repository, container.settingsStore, topic) }
-        },
-    )
+    val viewModel: WordBuilderViewModel = appViewModel { WordBuilderViewModel(it.repository, it.settingsStore, topic) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val total = state.queue.size
     val finished = !state.loading && total > 0 && state.index >= total

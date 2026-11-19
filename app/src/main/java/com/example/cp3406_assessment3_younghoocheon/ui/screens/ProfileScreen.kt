@@ -33,11 +33,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.R
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MenuRow
@@ -51,6 +47,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Peach
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sand
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 /** Profile tab: nickname, personal numbers and shortcuts to cards, faculty, settings and privacy. */
 @Composable
@@ -60,12 +57,7 @@ fun ProfileScreen(
     onOpenSettings: () -> Unit,
     onOpenPrivacy: () -> Unit,
 ) {
-    val container = appContainer()
-    val viewModel: OverviewViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { OverviewViewModel(container.repository, container.settingsStore) }
-        },
-    )
+    val viewModel: OverviewViewModel = appViewModel { OverviewViewModel(it.repository, it.settingsStore) }
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()

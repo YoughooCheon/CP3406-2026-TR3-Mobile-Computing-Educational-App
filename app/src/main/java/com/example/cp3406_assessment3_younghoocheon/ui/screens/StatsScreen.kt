@@ -38,11 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.R
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Achievement
 import com.example.cp3406_assessment3_younghoocheon.data.Achievements
 import com.example.cp3406_assessment3_younghoocheon.data.DayCount
@@ -54,6 +50,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.ScreenTitle
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Ink
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 private fun achievementIcon(id: String): ImageVector = when (id) {
     "first" -> Icons.Filled.Star
@@ -66,12 +63,7 @@ private fun achievementIcon(id: String): ImageVector = when (id) {
 /** Progress tab: streak, weekly chart, topic mastery and unlockable badges, all computed from saved reviews. */
 @Composable
 fun StatsScreen() {
-    val container = appContainer()
-    val viewModel: OverviewViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { OverviewViewModel(container.repository, container.settingsStore) }
-        },
-    )
+    val viewModel: OverviewViewModel = appViewModel { OverviewViewModel(it.repository, it.settingsStore) }
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     val ink = MaterialTheme.colorScheme.onPrimary

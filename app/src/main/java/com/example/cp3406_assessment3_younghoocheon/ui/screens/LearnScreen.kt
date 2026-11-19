@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,15 +26,13 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.LinkItem
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
+import com.example.cp3406_assessment3_younghoocheon.ui.components.ErrorCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.Avatar
+import com.example.cp3406_assessment3_younghoocheon.ui.components.LoadingCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.MutedText
 import com.example.cp3406_assessment3_younghoocheon.ui.components.NoticeBox
 import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
@@ -50,19 +46,15 @@ import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sand
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.Sky
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnState
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.LearnViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 /** Lectures screen: loads the featured lecture details from the YouTube oEmbed API with loading and error states. */
 @Composable
 fun LearnScreen(onBack: () -> Unit) {
     val uriHandler = LocalUriHandler.current
-    val container = appContainer()
     val featured = SampleData.links.first { it.kind == "Lecture" }
     val others = SampleData.links.filter { it.url != featured.url }
-    val viewModel: LearnViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { LearnViewModel(container.videoRepository, featured.url) }
-        },
-    )
+    val viewModel: LearnViewModel = appViewModel { LearnViewModel(it.videoRepository, featured.url) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val current = state
 
@@ -77,7 +69,12 @@ fun LearnScreen(onBack: () -> Unit) {
             NoticeBox("This screen asks YouTube for the lecture title and thumbnail, so YouTube can see your IP address. Links open in YouTube.")
         }
         when (current) {
-            LearnState.Loading -> item { LoadingCard() }
+            LearnState.Loading -> item {
+                LoadingCard(
+                    title = "Loading lecture info",
+                    message = "Asking YouTube for the title and thumbnail",
+                )
+            }
             is LearnState.Success -> item {
                 FeaturedLecture(
                     title = current.info.title,
@@ -89,7 +86,13 @@ fun LearnScreen(onBack: () -> Unit) {
                 )
             }
             LearnState.Failed -> {
-                item { FailedCard(onRetry = viewModel::load) }
+                item {
+                    ErrorCard(
+                        title = "Could not load lecture info",
+                        message = "Check your connection and try again. A saved copy is shown below.",
+                        onRetry = viewModel::load,
+                    )
+                }
                 item {
                     FeaturedLecture(
                         title = featured.shortTitle,
@@ -106,45 +109,6 @@ fun LearnScreen(onBack: () -> Unit) {
         items(others, key = { it.url }) { link ->
             ChannelRow(link = link, onOpen = { uriHandler.openUri(link.url) })
         }
-    }
-}
-
-@Composable
-private fun LoadingCard() {
-    AppCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(28.dp),
-                color = MaterialTheme.colorScheme.primary,
-                strokeWidth = 3.dp,
-            )
-            Column {
-                Text(
-                    text = "Loading lecture info",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                MutedText("Asking YouTube for the title and thumbnail")
-            }
-        }
-    }
-}
-
-@Composable
-private fun FailedCard(onRetry: () -> Unit) {
-    AppCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Could not load lecture info",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.error,
-        )
-        Spacer(Modifier.height(4.dp))
-        MutedText("Check your connection and try again. A saved copy is shown below.")
-        Spacer(Modifier.height(16.dp))
-        PillButton(text = "Try again", onClick = onRetry, modifier = Modifier.fillMaxWidth())
     }
 }
 

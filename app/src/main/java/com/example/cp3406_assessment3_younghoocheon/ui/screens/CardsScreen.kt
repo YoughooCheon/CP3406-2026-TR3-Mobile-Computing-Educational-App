@@ -23,10 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.Flashcard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
@@ -36,13 +32,11 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicTag
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.CardsViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 @Composable
 fun CardsScreen(onBack: () -> Unit, onAddCard: () -> Unit) {
-    val container = appContainer()
-    val viewModel: CardsViewModel = viewModel(
-        factory = viewModelFactory { initializer { CardsViewModel(container.repository) } },
-    )
+    val viewModel: CardsViewModel = appViewModel { CardsViewModel(it.repository) }
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     var cardToDelete by remember { mutableStateOf<Flashcard?>(null) }
 

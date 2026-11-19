@@ -21,10 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.MAX_CARD_TEXT
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.ui.components.BackHeader
@@ -33,13 +29,11 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.PillButton
 import com.example.cp3406_assessment3_younghoocheon.ui.components.SectionHeader
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TagChip
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.CardsViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 @Composable
 fun AddCardScreen(onBack: () -> Unit) {
-    val container = appContainer()
-    val viewModel: CardsViewModel = viewModel(
-        factory = viewModelFactory { initializer { CardsViewModel(container.repository) } },
-    )
+    val viewModel: CardsViewModel = appViewModel { CardsViewModel(it.repository) }
     val topics = SampleData.topics.drop(1)
 
     var front by rememberSaveable { mutableStateOf("") }

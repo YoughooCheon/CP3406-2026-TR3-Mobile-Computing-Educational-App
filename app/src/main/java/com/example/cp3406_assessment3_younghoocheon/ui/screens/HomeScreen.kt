@@ -41,11 +41,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.cp3406_assessment3_younghoocheon.R
-import com.example.cp3406_assessment3_younghoocheon.appContainer
 import com.example.cp3406_assessment3_younghoocheon.data.SampleData
 import com.example.cp3406_assessment3_younghoocheon.data.forTopic
 import com.example.cp3406_assessment3_younghoocheon.ui.components.AppCard
@@ -61,6 +57,7 @@ import com.example.cp3406_assessment3_younghoocheon.ui.components.Thumbnail
 import com.example.cp3406_assessment3_younghoocheon.ui.components.TopicArt
 import com.example.cp3406_assessment3_younghoocheon.ui.theme.topicColor
 import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.OverviewViewModel
+import com.example.cp3406_assessment3_younghoocheon.ui.viewmodel.appViewModel
 
 /** Landing page: greeting, today's progress, decks, daily goal, quick practice and faculty shortcuts. */
 @Composable
@@ -73,12 +70,7 @@ fun HomeScreen(
     onOpenCards: () -> Unit,
     onAddCard: () -> Unit,
 ) {
-    val container = appContainer()
-    val viewModel: OverviewViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { OverviewViewModel(container.repository, container.settingsStore) }
-        },
-    )
+    val viewModel: OverviewViewModel = appViewModel { OverviewViewModel(it.repository, it.settingsStore) }
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
