@@ -200,12 +200,3 @@ In Android Studio: right-click `app/src/test`, then **Run 'Tests in ...'**.
 | Unit testing | Section 7 |
 | GitHub | Commit history, this README |
 | Reflection | Submitted separately as a PDF based on Gibbs' Reflective Cycle |
-
-## 10. Credits and AI declaration
-
-- Topic summaries: Wikipedia REST API. Text is available under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Each summary links to its Wikipedia article.
-- Lecture data: YouTube oEmbed API. Lecture: Stanford Online (YouTube). The Explore screen opens Google Scholar searches in the browser.
-- University information in the Explore screen is summarised from the JCU Singapore Information Technology booklet (SIN07/26).
-- Libraries: Jetpack Compose, Navigation, Room, DataStore, Coil (all AndroidX / open source).
-- Illustrations in the introduction, Practice and topic cards: [CHANGE: add the source of each image].
-- Use of generative AI is described in the *Declaration of AI-Generated Material* submitted with this assignment.
